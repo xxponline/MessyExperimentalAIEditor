@@ -10,7 +10,7 @@ import {
     SetEdgesAction,
     SetNodesAction
 } from "./behaviour_tree_type_define";
-import {BehaviourTreeModel} from "../Model/BehaviourTreeModel";
+import {BehaviourTreeModel} from "../models/BehaviourTreeModel";
 
 
 export class BehaviourTreeEditHelper {
@@ -244,7 +244,7 @@ export class BehaviourTreeEditHelper {
             timestamp : Date.now()
         }
 
-        BehaviourTreeModel.Instance.SaveBehaviourTree(`Assets/AI/BtTest_${Date.now()}`, content)
+        BehaviourTreeModel.Instance.RequestSaveBehaviourTree(`Assets/AI/BtTest_${Date.now()}`, content)
             .then((c) => {console.log(`Ack:  ${JSON.stringify(c)}`)});
     }
 

@@ -1,7 +1,15 @@
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
 import {AckNetMessage, BaseNetMessage, NtfNetMessage, ReqNetMessage} from "./NetMessage";
+import {INetStateListener} from "../viewmodels/EditorFrameworkViewModel";
 
-export default class NetManager{
+export enum NetStateEnum {
+    StateOffline,
+    StateConnecting,
+    StateConnected,
+    StateError
+}
+
+export class NetManager{
     private static _instance : NetManager | null = null;
     private constructor() {
     }
@@ -30,22 +38,17 @@ export default class NetManager{
     {
         if(!this.IsInit)
         {
-            this._socket = new WebSocket("ws://localhost:8080/FrontendAPI/WSInterface");
-            this._socket.onopen = () => {}
-            this._socket.onmessage = (ev) => {NetManager.Instance.OnWSMessage(ev) };
-            this._socket.onclose = () => {}
-            this._socket.onerror = () => {}
-            this._isInit = true;
-
+            this._isInitialized = true;
             this._ackWaitMap.clear();
+            this._ntfListenerMap.clear();
         }
     }
 
-    private _isInit : boolean = false;
+    private _isInitialized : boolean = false;
 
     public get IsInit() : boolean
     {
-        return this._isInit;
+        return this._isInitialized;
     }
 
     public async SendRequestMessage(op: string, reqContent: { }, timeout = 10000) : Promise<AckNetMessage>
@@ -71,10 +74,32 @@ export default class NetManager{
         return waiter;
     }
 
+    private _netState : NetStateEnum = NetStateEnum.StateOffline;
+    public get NetState() : NetStateEnum {
+        return this._netState;
+    }
+
+    private _netStateListener : INetStateListener | null = null;
+    public RegisterNetStateListener(listener : INetStateListener) {
+        this._netStateListener = listener;
+    }
+    public RemoveNetStateListener() {
+        this._netStateListener = null;
+    }
+
+    public ConnectToProject(address: string) {
+        this._netState = NetStateEnum.StateConnecting;
+
+        this._socket = new WebSocket(`ws://${address}/FrontendAPI/WSInterface`);
+        this._socket.onopen = (ev) => { NetManager.Instance.OnWSOpen(ev) };
+        this._socket.onmessage = (ev) => { NetManager.Instance.OnWSMessage(ev) };
+        this._socket.onclose = (ev) => { NetManager.Instance.OnWSClose(ev) };
+        this._socket.onerror = (ev) => { NetManager.Instance.OnWSError(ev) };
+    }
+
     private OnWSMessage(ev: MessageEvent)
     {
         let msg : BaseNetMessage = JSON.parse(ev.data);
-        console.log(`On Message ${ev.data}`);
         switch (msg.msgType) {
             case 'ack': {
                 let ackMsg = msg as AckNetMessage;
@@ -97,6 +122,22 @@ export default class NetManager{
             default:
                 throw new Error(msg.msgType);
         }
+    }
+
+    private OnWSOpen(ev: Event) {
+        this._netState = NetStateEnum.StateConnected;
+        this._netStateListener?.OnNetStateChange(this.NetState, null);
+    }
+
+    private OnWSClose(ev: CloseEvent) {
+        this._netState = NetStateEnum.StateOffline;
+        this._netStateListener?.OnNetStateChange(this.NetState, null);
+    }
+
+    private OnWSError(ev: Event) {
+        this._netState = NetStateEnum.StateError;
+        this._netStateListener?.OnNetStateChange(this.NetState, ev.type);
+
     }
 
     public RegisterNtfListener(op: string, listener: (NtfMsg: NtfNetMessage) => void)

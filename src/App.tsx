@@ -1,11 +1,11 @@
-import React from 'react';
-
-import BehaviourTreeEditorView from "./behaviour_tree_editor_view/behaviour_tree_editor";
+import {EditorFrameworkView} from "./views/EditorFrameworkView";
+import {EditorFrameworkViewModel} from "./viewmodels/EditorFrameworkViewModel";
 
 
 function App() {
     return (
-        <BehaviourTreeEditorView/>
+        <EditorFrameworkViewModel render={EditorFrameworkView}/>
+        //<BehaviourTreeEditorView/>
     );
 }
 export default App;

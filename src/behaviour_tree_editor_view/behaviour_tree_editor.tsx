@@ -16,8 +16,8 @@ import {
     BTTaskNode
 } from "./behaviour_tree_node_display";
 import {BTNodeType, EditorContextEnum} from "./behaviour_tree_type_define";
-import NetManager from "../Model/NetManager";
-import {BehaviourTreeModel} from "../Model/BehaviourTreeModel";
+import {NetManager} from "../service/NetManager";
+import {BehaviourTreeModel} from "../models/BehaviourTreeModel";
 
 
 const nodeTypes = {
@@ -119,7 +119,7 @@ export default function BehaviourTreeEditorView(){
     return (
         <div style={{width: '100vw', height: '100vh'}}>
             <button onClick={() => {
-                BehaviourTreeModel.Instance.QueryAllBehaviourTrees().then(
+                BehaviourTreeModel.Instance.RequestBehaviourTreesAssetsList().then(
                     (ack) => console.log(ack)
             );
             }}>ListAssets
