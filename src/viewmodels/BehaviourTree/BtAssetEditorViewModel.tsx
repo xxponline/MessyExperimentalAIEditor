@@ -1,26 +1,26 @@
 import React from "react";
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
-import {BTEdge, BTNode} from "../../behaviour_tree_editor_view/behaviour_tree_node_display";
 import {BtAssetEditorView} from "../../views/BehaviourTree/BtAssetEditorView";
 import {NodeChange, NodePositionChange} from "reactflow";
 import {NodeSelectionChange} from "@reactflow/core/dist/esm/types/changes";
-import {IBtEditorListener} from "../../models/BehaviourTreeModel";
+import {BehaviourTreeModel, IBtEditorListener} from "../../models/BehaviourTreeModel";
+import {BtDisplayEdge, BtDisplayNode} from "../../views/BehaviourTree/BtAssetEditorNodeDisplay";
 
 interface IBtEditorClassState {
-    Nodes: BTNode[];
-    Edges: BTEdge[];
+    Nodes: BtDisplayNode[];
+    Edges: BtDisplayEdge[];
 }
 
 export interface IBtAssetEditorRenderProps {
-    Nodes: BTNode[];
-    Edges: BTEdge[];
+    Nodes: BtDisplayNode[];
+    Edges: BtDisplayEdge[];
 
     onNodesChange: (nodes: NodeChange[]) => void;
 }
 
 const rootId = generateUniqueID();
 const firstNodeId = generateUniqueID();
-const initialNodes : BTNode[]  = [
+const initialNodes : BtDisplayNode[]  = [
     { id: rootId, type: "bt_root", position: { x: 10, y: 10 }, data: {} },
     { id: firstNodeId,  type: "bt_sequence", position: { x: 100, y: 100 }, data: {} },
 ];
@@ -40,15 +40,11 @@ export class BtAssetEditorViewModel extends React.Component<{},IBtEditorClassSta
         this.onNodesChange.bind(this);
     }
 
-    OnCurrentEditingBtDocumentChanged(): void {
-        console.log("111111");
-    }
-
-    setNodes(nodes : BTNode[]) {
+    setNodes(nodes : BtDisplayNode[]) {
         this.setState({ Nodes: nodes });
     }
 
-    setEdges(edges : BTEdge[]) {
+    setEdges(edges : BtDisplayEdge[]) {
         this.setState( { Edges: edges})
     }
 
@@ -93,11 +89,35 @@ export class BtAssetEditorViewModel extends React.Component<{},IBtEditorClassSta
     }
 
     componentDidMount() {
-
+        BehaviourTreeModel.Instance.RegisterBtDocumentEditorListener(this);
     }
 
     componentWillUnmount() {
+        BehaviourTreeModel.Instance.RemoveBtDocumentEditorListener(this);
+    }
 
+    OnCurrentEditingBtDocumentChanged(): void {
+        let [logicNodes, logicConnections] = BehaviourTreeModel.Instance.GetEditingBtAssetContent();
+        console.log(logicNodes);
+        let displayNodes = logicNodes.map<BtDisplayNode>((n) => {
+            return {
+                id: n.id,
+                type: n.type,
+                position: n.position,
+                data: {},
+            }
+        });
+        let displayConnections = logicConnections.map<BtDisplayEdge>((c) => {
+           return {
+               id: c.id,
+               source: c.source,
+               target: c.target,
+           }
+        });
+
+        console.log(displayNodes);
+
+        this.setState({ Nodes: displayNodes, Edges: displayConnections});
     }
 
     render() {
@@ -107,6 +127,16 @@ export class BtAssetEditorViewModel extends React.Component<{},IBtEditorClassSta
 
             onNodesChange: (changes : NodeChange[]) => this.onNodesChange(changes)
         }
-        return (<BtAssetEditorView {...renderProps} />);
+        return (
+            <div style={{width: "100%", height: "100%"}}>
+                <div><button onClick={() => {BehaviourTreeModel.Instance.RequestSaveCurrentBtDocumentation().then()}} >Save</button> </div>
+                <div style={{width: "100%", height: "100%"}} >
+                    <BtAssetEditorView {...renderProps} />
+                </div>
+            </div>
+        );
     }
+
+
+    //
 }

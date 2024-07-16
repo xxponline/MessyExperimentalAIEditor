@@ -1,7 +1,6 @@
 import React from "react";
 import {BehaviourTreeModel, IBtAssetsChangeListener} from "../../models/BehaviourTreeModel";
 import {NetManager, NetStateEnum} from "../../service/NetManager";
-import {BtAssetSummary} from "../../models/BehaviourTreeLogicDataStructure";
 import {BtAssetExplorerView} from "../../views/BehaviourTree/BtAssetExplorerView";
 
 export class PathNode {
@@ -54,7 +53,7 @@ export class BtAssetExplorerViewModel extends React.Component<
     }
 
     componentWillUnmount() {
-        BehaviourTreeModel.Instance.RemoveBtAssetsChangeListener();
+        BehaviourTreeModel.Instance.RemoveBtAssetsChangeListener(this);
     }
 
 
@@ -102,6 +101,6 @@ export class BtAssetExplorerViewModel extends React.Component<
             }
         }
 
-        this.setState({ root : routerRoot})
+        this.setState({ root : routerRoot })
     }
 }

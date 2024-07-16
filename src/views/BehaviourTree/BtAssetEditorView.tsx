@@ -7,7 +7,7 @@ import {
     BTSelectorNode,
     BTSequenceNode,
     BTSimpleParallelNode, BTTaskNode
-} from "../../behaviour_tree_editor_view/behaviour_tree_node_display";
+} from "./BtAssetEditorNodeDisplay";
 
 const nodeTypes = {
     "bt_root" : BTRootNode,
@@ -19,6 +19,19 @@ const nodeTypes = {
 
 
 export class BtAssetEditorView extends React.Component<IBtAssetEditorRenderProps, {}>{
+
+    OnNodeContextMenu() {
+        console.log(this.props);
+    }
+
+    OnPaneContextMenu() {
+        console.log(this.props);
+    }
+
+    OnEdgeContextMenu() {
+        console.log(this.props);
+    }
+
     render() {
         return(
             <ReactFlow
@@ -26,9 +39,9 @@ export class BtAssetEditorView extends React.Component<IBtAssetEditorRenderProps
                 edges={this.props.Edges}
                 onNodesChange={this.props.onNodesChange}
                 //onEdgesChange={onEdgesChange}
-                //onNodeContextMenu={onNodeContextMenu}
-                //onPaneContextMenu={onPaneContextMenu}
-                //onEdgeContextMenu={onEdgeContextMenu}
+                onNodeContextMenu={ (e) => {this.OnNodeContextMenu()} }
+                onPaneContextMenu={ (e) => {this.OnPaneContextMenu()} }
+                onEdgeContextMenu={ (e) => {this.OnEdgeContextMenu()} }
                 //onNodeClick={onCancelMenu}
                 //onEdgeClick={(event, node) => onCancelMenu}
                 //onClick={onCancelMenu}

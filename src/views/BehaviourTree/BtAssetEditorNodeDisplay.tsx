@@ -1,16 +1,14 @@
 import {Handle, Node, NodeProps, Position} from "reactflow";
 import {Edge} from "@reactflow/core/dist/esm/types/edges";
 
-import "./behaviour_tree_node.css"
+import "./BtAssetEditorNode.css"
+import {IBtNodeData} from "../../models/BtLogicDataStructure";
 
-export type BTEdge = Edge<any>;
+export type BtDisplayEdge = Edge<any>;
+export type BtDisplayNode = Node<IBtNodeData, string>;
 
-export type BTNodeData = { }
-export type BTNode = Node<BTNodeData, string>;
 
-type NodeParam = { data: BTNodeData, isConnectable: boolean };
-
-export function BTRootNode(nodeProps: NodeProps<BTNode>) {
+export function BTRootNode(nodeProps: NodeProps<BtDisplayNode>) {
     return (
         <div className={"root-node"}>
             <div>Root</div>
@@ -19,7 +17,7 @@ export function BTRootNode(nodeProps: NodeProps<BTNode>) {
     );
 }
 
-export function BTSelectorNode(node: NodeProps<BTNode>) {
+export function BTSelectorNode(node: NodeProps<BtDisplayNode>) {
     return (
         <div className={"selector-node"}>
             <Handle type="target" position={Position.Top}/>
@@ -29,7 +27,7 @@ export function BTSelectorNode(node: NodeProps<BTNode>) {
     );
 }
 
-export function BTSequenceNode(node: NodeProps<BTNode>) {
+export function BTSequenceNode(node: NodeProps<BtDisplayNode>) {
     return (
         <div className={"sequence-node"}>
             <Handle type="target" position={Position.Top}/>
@@ -39,7 +37,7 @@ export function BTSequenceNode(node: NodeProps<BTNode>) {
     );
 }
 
-export function BTSimpleParallelNode(node: NodeProps<BTNode>) {
+export function BTSimpleParallelNode(node: NodeProps<BtDisplayNode>) {
     return (
         <div className={"sequence-node"}>
             <Handle type="target" position={Position.Top}/>
@@ -50,7 +48,7 @@ export function BTSimpleParallelNode(node: NodeProps<BTNode>) {
     );
 }
 
-export function BTTaskNode(node: NodeProps<BTNode>) {
+export function BTTaskNode(node: NodeProps<BtDisplayNode>) {
     return (
         <div className={"task-node"}>
             <Handle type="target" position={Position.Top}/>

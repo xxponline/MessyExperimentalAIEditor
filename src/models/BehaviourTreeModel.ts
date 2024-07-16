@@ -1,13 +1,14 @@
 import {NetManager} from "../service/NetManager";
 import {
-    AckMessageCode,
-    AckNetMessage,
-    ListBtAssetsNtfMessage,
+    AckMessageCode, ListBtAssetsNtfMessage,
     NtfNetMessage,
     ReadBtAssetNtfMessage
 } from "../service/NetMessage";
-import {BtAssetDetail, BtAssetSummary, ILogicBtConnection, ILogicBtNode} from "./BehaviourTreeLogicDataStructure";
+import {BtAssetDetail, BtAssetSummary, ILogicBtConnection, ILogicBtNode} from "./BtLogicDataStructure";
 import {IAsyncResult} from "./MethodResult";
+import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
+
+export type BtNodeType = ("bt_selector" | "bt_sequence" | "bt_simpleParallel" | "bt_task");
 
 
 export interface IBtAssetsChangeListener {
@@ -54,13 +55,21 @@ export class BehaviourTreeModel {
         return NetManager.Instance.SendRequestMessage("/BehaviourTree/ListAllAssets", {} );
     }
 
-    public async RequestSaveBehaviourTree(assetPath: string, contentJson: any)
+    public async RequestSaveCurrentBtDocumentation()
     {
-        let opDetail = {
-            assetPath : assetPath,
-            btContent: contentJson
+        let path = this._currentEditingBtAssetPath;
+        if(path !== null) {
+            let opDetail = {
+                assetPath : path,
+                btContent: this._btAssetsContentMap.get(path)
+            }
+            let ack = await NetManager.Instance.SendRequestMessage("/BehaviourTree/SaveBehaviourTree", opDetail );
+            let result = new Promise<IAsyncResult>((resolve) => {
+                resolve({ success: ack.ackCode === AckMessageCode.SUCCESS });
+            })
+            return result;
         }
-        return NetManager.Instance.SendRequestMessage("/BehaviourTree/SaveBehaviourTree", opDetail );
+        //return
     }
 
     public async RequestReadBehaviourTree(assetPath: string)
@@ -73,8 +82,6 @@ export class BehaviourTreeModel {
 
     private _btAssetsList : Array<BtAssetSummary> = [];
     public get BtAssetsList() : ReadonlyArray<Readonly<BtAssetSummary>> { return this._btAssetsList }
-    private _btDetailMap : Map<string, BtAssetDetail> = new Map();
-    private _currentEditingBtAssetContent : BtAssetDetail | null = null;
 
     private OnNtfListBehaviourTrees(msg: NtfNetMessage)
     {
@@ -85,25 +92,18 @@ export class BehaviourTreeModel {
         this._btAssetsListener?.OnBtAssetsListChanged();
     }
 
-    private OnNtfReadBehaviourTrees(msg: NtfNetMessage)
-    {
-        let assetDetailMsg = msg as ReadBtAssetNtfMessage;
-        // console.log("assetDetailMsg:");
-        // console.log(assetDetailMsg);
-        let assetPath = assetDetailMsg.ntfOpContent.assetPath;
-        this._btDetailMap.set(assetPath, assetDetailMsg.ntfOpContent);
-    }
-
     private _btAssetsListener: IBtAssetsChangeListener | null = null;
     public RegisterBtAssetsChangeListener(listener: IBtAssetsChangeListener) : void
     {
         this._btAssetsListener = listener;
     }
-    public RemoveBtAssetsChangeListener() : void
+    public RemoveBtAssetsChangeListener(listener: IBtAssetsChangeListener) : void
     {
         this._btAssetsListener = null;
     }
 
+
+    // Graphic Edit Implementation
     private _btAssetEditorListener: IBtEditorListener | null = null;
     public RegisterBtDocumentEditorListener(listener: IBtEditorListener) : void {
         this._btAssetEditorListener = listener;
@@ -112,11 +112,23 @@ export class BehaviourTreeModel {
         this._btAssetEditorListener = null;
     }
 
+    private _btAssetsContentMap : Map<string, BtAssetDetail> = new Map();
+    private _currentEditingBtAssetContent : BtAssetDetail | null = null;
+    private _currentEditingBtAssetPath: string | null = null;
 
-    // Graphic Edit Implementation
+    private OnNtfReadBehaviourTrees(msg: NtfNetMessage)
+    {
+        let assetDetailMsg = msg as ReadBtAssetNtfMessage;
+        // console.log("assetDetailMsg:");
+        // console.log(assetDetailMsg);
+        let assetPath = assetDetailMsg.ntfOpContent.assetPath;
+        this._btAssetsContentMap.set(assetPath, assetDetailMsg.ntfOpContent);
+    }
+
+
     public async ChangeEditingBtAsset(path: string) {
-        if(this._btDetailMap.has(path)) {
-            this._currentEditingBtAssetContent = this._btDetailMap.get(path)!;
+        if(this._btAssetsContentMap.has(path)) {
+            this.ChangeEditingBtAssetInner(path);
             let result = new Promise<IAsyncResult>((resolve) => {
                 resolve({ success: true });
             })
@@ -126,7 +138,7 @@ export class BehaviourTreeModel {
         else {
             let netResult = await this.RequestReadBehaviourTree(path);
             if(netResult.ackCode === AckMessageCode.SUCCESS) {
-                this._currentEditingBtAssetContent = this._btDetailMap.get(path)!;
+                this.ChangeEditingBtAssetInner(path);
                 let result = new Promise<IAsyncResult>((resolve) => {
                     resolve({ success: true });
                 })
@@ -142,24 +154,61 @@ export class BehaviourTreeModel {
         }
     }
 
+    private ChangeEditingBtAssetInner(path: string) : boolean {
+        if(this._currentEditingBtAssetPath == path) {
+            return false;
+        }
+        this._currentEditingBtAssetPath = path;
+        this._currentEditingBtAssetContent = this._btAssetsContentMap.get(path)!
+        if(this._currentEditingBtAssetContent.btNodes === null) {
+            this._currentEditingBtAssetContent.btNodes = [];
+            if(this._currentEditingBtAssetContent.btNodes.every((n) => n.type !== 'bt_root')) {
+                this._currentEditingBtAssetContent.btNodes = this._currentEditingBtAssetContent.btNodes.concat({
+                    id: generateUniqueID(),
+                    type: "bt_root",
+                    position: { x : 100, y: 100 },
+                    data: {}
+                });
+            }
+        }
+        if(this._currentEditingBtAssetContent.btConnections === null) {
+            this._currentEditingBtAssetContent.btConnections = [];
+        }
+        return true;
+    }
+
     public GetEditingBtAssetContent() : [ Array<ILogicBtNode>, Array<ILogicBtConnection> ] {
-        return [[], []]
+        return [this._currentEditingBtAssetContent!.btNodes, this._currentEditingBtAssetContent!.btConnections];
     }
 
 
-    public MoveNode() {
-
+    public MoveNode(moveInfo: { Id: string, x: number, y: number }) {
+        if(this._currentEditingBtAssetContent !== null) {
+             let beModifiedNode = this._currentEditingBtAssetContent!.btNodes.find((n) => n.id == moveInfo.Id);
+             if(beModifiedNode) {
+                 beModifiedNode.position = { x: moveInfo.x, y: moveInfo.y };
+             }
+        }
     }
 
-    public CreateNode() {
 
+    public CreateNode(nodeType: BtNodeType, pos: { x: number; y: number }) : void {
+        if(this._currentEditingBtAssetContent) {
+            let newNode : ILogicBtNode = {
+                id: generateUniqueID(),
+                type: nodeType,
+                data: {
+                },
+                position: pos
+            }
+            this._currentEditingBtAssetContent!.btNodes.push(newNode);
+        }
     }
 
     public RemoveNode() {
-
     }
 
-    public LinkNode() {
+    public LinkNode(srcId: string, tarId: string) {
 
     }
 

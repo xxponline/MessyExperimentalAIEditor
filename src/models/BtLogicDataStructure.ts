@@ -1,3 +1,7 @@
+export interface IBtNodeData {
+
+}
+
 export interface ILogicBtNode {
     id: string,
     position: { x: number, y: number },

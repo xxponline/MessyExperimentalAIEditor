@@ -1,6 +1,6 @@
 import React from "react";
 import {NetManager, NetStateEnum} from "../service/NetManager";
-import {StandardViewModelProps} from "./ViewModelProps";
+import {EditorFrameworkView} from "../views/EditorFrameworkView";
 
 export interface IEditorFrameworkViewModelState {
     NetState: NetStateEnum;
@@ -22,7 +22,7 @@ export interface IEditorFrameworkHelper {
 }
 
 export class EditorFrameworkViewModel extends
-    React.Component<StandardViewModelProps<IEditorFrameworkRenderParameters>, IEditorFrameworkViewModelState>
+    React.Component<{}, IEditorFrameworkViewModelState>
     implements INetStateListener, IEditorFrameworkHelper
 {
     state: IEditorFrameworkViewModelState = {
@@ -48,12 +48,6 @@ export class EditorFrameworkViewModel extends
     }
 
     render() {
-        return this.props.render(
-            {
-                netState: this.state.NetState,
-                netErrorInfo: this.state.ErrorInfo,
-                vmHelper: this
-            }
-        );
+        return (<EditorFrameworkView netState={this.state.NetState} netErrorInfo={this.state.ErrorInfo} vmHelper={this} />)
     }
 }

@@ -1,4 +1,4 @@
-import {BtAssetDetail, BtAssetSummary} from "../models/BehaviourTreeLogicDataStructure";
+import {BtAssetDetail, BtAssetSummary} from "../models/BtLogicDataStructure";
 
 export type NetMsgType = 'req' | 'ack' | 'ntf';
 
