@@ -7,15 +7,18 @@ import {
 import {BtAssetDetail, BtAssetSummary, ILogicBtConnection, ILogicBtNode} from "./BtLogicDataStructure";
 import {IAsyncResult} from "./MethodResult";
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
-
-export type BtNodeType = ("bt_selector" | "bt_sequence" | "bt_simpleParallel" | "bt_task");
+import {BtNodeType} from "../common/BtCommon";
+import {EditorPosition} from "../common/EditorCommon";
 
 
 export interface IBtAssetsChangeListener {
     OnBtAssetsListChanged(): void
 }
 
-export interface IBtEditorListener {
+export interface IBtContentChangedListener {
+    OnCreateNewNode(nodes: Array<Readonly<ILogicBtNode>>) : void;
+    OnNodeLinked(connections: Array<Readonly<ILogicBtConnection>>): void;
+    OnRemoveElement(nodeIds: string[], connectionIds: string[]): void;
     OnCurrentEditingBtDocumentChanged(): void
 }
 
@@ -86,8 +89,6 @@ export class BehaviourTreeModel {
     private OnNtfListBehaviourTrees(msg: NtfNetMessage)
     {
         let assetListMsg = msg as ListBtAssetsNtfMessage;
-        // console.log("assetListMsg:");
-        // console.log(assetListMsg);
         this._btAssetsList = assetListMsg.ntfOpContent;
         this._btAssetsListener?.OnBtAssetsListChanged();
     }
@@ -104,12 +105,12 @@ export class BehaviourTreeModel {
 
 
     // Graphic Edit Implementation
-    private _btAssetEditorListener: IBtEditorListener | null = null;
-    public RegisterBtDocumentEditorListener(listener: IBtEditorListener) : void {
-        this._btAssetEditorListener = listener;
+    private _btEditorContentListener: IBtContentChangedListener | null = null;
+    public RegisterBtDocumentEditorListener(listener: IBtContentChangedListener) : void {
+        this._btEditorContentListener = listener;
     }
-    public RemoveBtDocumentEditorListener(listener: IBtEditorListener) : void {
-        this._btAssetEditorListener = null;
+    public RemoveBtDocumentEditorListener(listener: IBtContentChangedListener) : void {
+        this._btEditorContentListener = null;
     }
 
     private _btAssetsContentMap : Map<string, BtAssetDetail> = new Map();
@@ -119,8 +120,6 @@ export class BehaviourTreeModel {
     private OnNtfReadBehaviourTrees(msg: NtfNetMessage)
     {
         let assetDetailMsg = msg as ReadBtAssetNtfMessage;
-        // console.log("assetDetailMsg:");
-        // console.log(assetDetailMsg);
         let assetPath = assetDetailMsg.ntfOpContent.assetPath;
         this._btAssetsContentMap.set(assetPath, assetDetailMsg.ntfOpContent);
     }
@@ -132,7 +131,7 @@ export class BehaviourTreeModel {
             let result = new Promise<IAsyncResult>((resolve) => {
                 resolve({ success: true });
             })
-            this._btAssetEditorListener?.OnCurrentEditingBtDocumentChanged();
+            this._btEditorContentListener?.OnCurrentEditingBtDocumentChanged();
             return result;
         }
         else {
@@ -142,7 +141,7 @@ export class BehaviourTreeModel {
                 let result = new Promise<IAsyncResult>((resolve) => {
                     resolve({ success: true });
                 })
-                this._btAssetEditorListener?.OnCurrentEditingBtDocumentChanged();
+                this._btEditorContentListener?.OnCurrentEditingBtDocumentChanged();
                 return result;
             }
             else {
@@ -163,7 +162,7 @@ export class BehaviourTreeModel {
         if(this._currentEditingBtAssetContent.btNodes === null) {
             this._currentEditingBtAssetContent.btNodes = [];
             if(this._currentEditingBtAssetContent.btNodes.every((n) => n.type !== 'bt_root')) {
-                this._currentEditingBtAssetContent.btNodes = this._currentEditingBtAssetContent.btNodes.concat({
+                this._currentEditingBtAssetContent.btNodes.push({
                     id: generateUniqueID(),
                     type: "bt_root",
                     position: { x : 100, y: 100 },
@@ -192,7 +191,7 @@ export class BehaviourTreeModel {
     }
 
 
-    public CreateNode(nodeType: BtNodeType, pos: { x: number; y: number }) : void {
+    public CreateNodeInEditingDocument(nodeType: BtNodeType, pos: EditorPosition) : void {
         if(this._currentEditingBtAssetContent) {
             let newNode : ILogicBtNode = {
                 id: generateUniqueID(),
@@ -202,17 +201,30 @@ export class BehaviourTreeModel {
                 position: pos
             }
             this._currentEditingBtAssetContent!.btNodes.push(newNode);
+            this._btEditorContentListener?.OnCreateNewNode([newNode]);
         }
     }
 
-    public RemoveNode() {
+    public RemoveNodeInEditingDocument() {
     }
 
-    public LinkNode(srcId: string, tarId: string) {
-
+    public LinkNodeInEditingDocument(srcId: string, tarId: string) {
+        let content = this._currentEditingBtAssetContent;
+        if(content) {
+            if(content.btNodes.some((n) => n.id === srcId) &&
+                content.btNodes.some((n) => n.id === tarId)) {
+                let newConnection: ILogicBtConnection = {
+                    id: generateUniqueID(),
+                    source: srcId,
+                    target: tarId
+                }
+                content.btConnections.push(newConnection);
+                this._btEditorContentListener?.OnNodeLinked([newConnection]);
+            }
+        }
     }
 
-    public RemoveConnection() {
+    public UnlinkInEditingDocument() {
 
     }
 }

@@ -2,12 +2,6 @@ import React from "react";
 import {SimpleTreeView, TreeItem, TreeItem2, TreeItem2Label} from "@mui/x-tree-view";
 import {IBtAssetExplorerRenderParameters, PathNode} from "../../viewmodels/BehaviourTree/BtAssetExplorerViewModel";
 
-// class CustomizeTreeItemSlot implements TreeItem2Slots {
-//     render(){
-//         ret
-//     }
-// }
-
 interface CustomizeTreeItemLabelProps {
     btAssetGuid: string;
     isSelected: boolean;

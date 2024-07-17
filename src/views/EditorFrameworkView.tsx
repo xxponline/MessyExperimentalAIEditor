@@ -53,8 +53,3 @@ export class EditorFrameworkView extends React.Component<IEditorFrameworkRenderP
         return renderResult;
     }
 }
-
-// export function EditorFrameworkView(parameters: IEditorFrameworkRenderParameters) : React.ReactNode
-// {
-//
-// }
