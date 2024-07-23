@@ -1,9 +1,11 @@
-import React from "react";
+import React, {type MouseEvent as ReactMouseEvent} from "react";
 import ReactFlow, {Background, Controls} from "reactflow";
 import 'reactflow/dist/style.css';
 import {IBtAssetEditorRenderProps} from "../../viewmodels/BehaviourTree/BtAssetEditorViewModel";
 import {BTRootNode, BTSelectorNode, BTSequenceNode, BTSimpleParallelNode, BTTaskNode} from "./BtAssetEditorNodeDisplay";
 import {BtAssetEditorMenuView, EditorContextMenuEnum, MenuDirection} from "./BtAssetEditorMenuView";
+import {BtNodeInspectorViewModel} from "../../viewmodels/BehaviourTree/BtNodeInspectorViewModel";
+import {Node} from "@reactflow/core/dist/esm/types/nodes";
 
 const nodeTypes = {
     "bt_root" : BTRootNode,
@@ -48,7 +50,12 @@ export class BtAssetEditorView extends React.Component<IBtAssetEditorRenderProps
         this.setState({contextMenu: EditorContextMenuEnum.None});
     }
 
+    OnDragSelection(e: ReactMouseEvent, nodes: Node[]) {
+        console.log(nodes);
+    }
+
     render() {
+
         return(
             <ReactFlow
                 ref={this.elementRef}
@@ -77,6 +84,7 @@ export class BtAssetEditorView extends React.Component<IBtAssetEditorRenderProps
                                        dirMenu={this.state.menuDir} position={this.state.position}
                                        editorHelper={this.props.editorHelper}
                 />
+                <BtNodeInspectorViewModel />
             </ReactFlow>
         )
     }

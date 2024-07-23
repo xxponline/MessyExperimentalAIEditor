@@ -154,7 +154,7 @@ export class BehaviourTreeModel {
     }
 
     private ChangeEditingBtAssetInner(path: string) : boolean {
-        if(this._currentEditingBtAssetPath == path) {
+        if(this._currentEditingBtAssetPath === path) {
             return false;
         }
         this._currentEditingBtAssetPath = path;
@@ -183,7 +183,7 @@ export class BehaviourTreeModel {
 
     public MoveNode(moveInfo: { Id: string, x: number, y: number }) {
         if(this._currentEditingBtAssetContent !== null) {
-             let beModifiedNode = this._currentEditingBtAssetContent!.btNodes.find((n) => n.id == moveInfo.Id);
+             let beModifiedNode = this._currentEditingBtAssetContent!.btNodes.find((n) => n.id === moveInfo.Id);
              if(beModifiedNode) {
                  beModifiedNode.position = { x: moveInfo.x, y: moveInfo.y };
              }
@@ -226,5 +226,38 @@ export class BehaviourTreeModel {
 
     public UnlinkInEditingDocument() {
 
+    }
+
+    //Query Behaviour Tree Task Types
+    public GetBTTTypes() : { taskType: string, Content: {} }[] {
+        let BTTTypes = [
+            {
+                taskType : "None",
+                Content: {}
+            },
+            {
+                taskType : "Debug",
+                Content: {
+                    DebugLogLevel: { type: "Enum", OptionalItems: ["Log", "Warning", "Assert", "Error"] },
+                    OutputContent: { type: "String" },
+                    CheckBox: { type: "Boolean" },
+
+                    IntMember_Range: { type: "Int", range: [1, 1000] },
+                    IntMember: { type: "Int" },
+                    FloatMember_Range: { type: "Float", range: [1, 1000] },
+                    FloatMember: { type: "Float" },
+                    BBKeyMember: { type: "BBKey" },
+                }
+            },
+        ]
+        return BTTTypes;
+    }
+
+    public GetBTDTypes() : {}[] {
+        return [{}]
+    }
+
+    public GetBTSTypes() : {}[] {
+        return [{}]
     }
 }

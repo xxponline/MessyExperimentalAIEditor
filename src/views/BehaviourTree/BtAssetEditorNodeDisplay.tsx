@@ -3,23 +3,34 @@ import {Edge} from "@reactflow/core/dist/esm/types/edges";
 
 import "./BtAssetEditorNode.css"
 import {IBtNodeData} from "../../models/BtLogicDataStructure";
+import React from "react";
 
 export type BtDisplayEdge = Edge<any>;
 export type BtDisplayNode = Node<IBtNodeData, string>;
 
 
+function getCss(nodeProps: NodeProps<BtDisplayNode>): React.CSSProperties {
+    let st : { backgroundColor: string } = { backgroundColor: "#fff" };
+    if(nodeProps.selected){
+        st = { backgroundColor: "#888" }
+    }
+    return st;
+}
+
 export function BTRootNode(nodeProps: NodeProps<BtDisplayNode>) {
+
+
     return (
-        <div className={"root-node"}>
+        <div className={"root-node"} style={getCss(nodeProps)}>
             <div>Root</div>
             <Handle type="source" position={Position.Bottom}/>
         </div>
     );
 }
 
-export function BTSelectorNode(node: NodeProps<BtDisplayNode>) {
+export function BTSelectorNode(nodeProps: NodeProps<BtDisplayNode>) {
     return (
-        <div className={"selector-node"}>
+        <div className={"selector-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
             <div>Selector</div>
             <Handle type="source" position={Position.Bottom}/>
@@ -27,9 +38,9 @@ export function BTSelectorNode(node: NodeProps<BtDisplayNode>) {
     );
 }
 
-export function BTSequenceNode(node: NodeProps<BtDisplayNode>) {
+export function BTSequenceNode(nodeProps: NodeProps<BtDisplayNode>) {
     return (
-        <div className={"sequence-node"}>
+        <div className={"sequence-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
             <div>Sequence</div>
             <Handle type="source" position={Position.Bottom}/>
@@ -37,9 +48,9 @@ export function BTSequenceNode(node: NodeProps<BtDisplayNode>) {
     );
 }
 
-export function BTSimpleParallelNode(node: NodeProps<BtDisplayNode>) {
+export function BTSimpleParallelNode(nodeProps: NodeProps<BtDisplayNode>) {
     return (
-        <div className={"sequence-node"}>
+        <div className={"sequence-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
             <div>SimpleParallel</div>
             <Handle type="source" position={Position.Bottom}/>
@@ -48,9 +59,9 @@ export function BTSimpleParallelNode(node: NodeProps<BtDisplayNode>) {
     );
 }
 
-export function BTTaskNode(node: NodeProps<BtDisplayNode>) {
+export function BTTaskNode(nodeProps: NodeProps<BtDisplayNode>) {
     return (
-        <div className={"task-node"}>
+        <div className={"task-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
             <div>Task</div>
             <Handle type="source" position={Position.Bottom}/>

@@ -47,10 +47,6 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
             Nodes: [],
             Edges: []
         }
-
-        this.setNodes.bind(this);
-        this.setEdges.bind(this);
-        this.onNodesChange.bind(this);
     }
 
     //EditorHelper
@@ -132,13 +128,6 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
 
 
     //ReactFlow Need Method
-    setNodes(nodes : BtDisplayNode[]) {
-        this.setState({ Nodes: nodes });
-    }
-
-    setEdges(edges : BtDisplayEdge[]) {
-        this.setState( { Edges: edges})
-    }
 
     onNodesChange(changes: NodeChange[]) {
         for(let changeItem of changes) {
@@ -146,11 +135,11 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
                 case "select":
                 {
                     let changeDetailItem: NodeSelectionChange = changeItem;
-                    this.setState((prevState) => ({
-                        Nodes: prevState.Nodes.map((node) => {
-                            return changeDetailItem.id === node.id ? {...node, selected: changeDetailItem.selected} : node;
-                        }),
-                    }));
+                    for( let node of this.state.Nodes) {
+                        if (changeDetailItem.id === node.id) {
+                            node.selected = changeDetailItem.selected;
+                        }
+                    }
                 }
                     break;
                 case "position":
@@ -188,7 +177,7 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
         for(let changeItem of changes) {
             switch (changeItem.type) {
                 default:
-                    console.log(changeItem);
+                    //console.log(changeItem);
                     break;
             }
         }
