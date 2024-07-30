@@ -9,7 +9,7 @@ export type BtDisplayEdge = Edge<any>;
 export type BtDisplayNode = Node<IBtNodeData, string>;
 
 
-function getCss(nodeProps: NodeProps<BtDisplayNode>): React.CSSProperties {
+function getCss(nodeProps: NodeProps): React.CSSProperties {
     let st : { backgroundColor: string } = { backgroundColor: "#fff" };
     if(nodeProps.selected){
         st = { backgroundColor: "#888" }
@@ -17,9 +17,7 @@ function getCss(nodeProps: NodeProps<BtDisplayNode>): React.CSSProperties {
     return st;
 }
 
-export function BTRootNode(nodeProps: NodeProps<BtDisplayNode>) {
-
-
+export function BTRootNode(nodeProps: NodeProps) {
     return (
         <div className={"root-node"} style={getCss(nodeProps)}>
             <div>Root</div>
@@ -28,7 +26,7 @@ export function BTRootNode(nodeProps: NodeProps<BtDisplayNode>) {
     );
 }
 
-export function BTSelectorNode(nodeProps: NodeProps<BtDisplayNode>) {
+export function BTSelectorNode(nodeProps: NodeProps) {
     return (
         <div className={"selector-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
@@ -38,7 +36,7 @@ export function BTSelectorNode(nodeProps: NodeProps<BtDisplayNode>) {
     );
 }
 
-export function BTSequenceNode(nodeProps: NodeProps<BtDisplayNode>) {
+export function BTSequenceNode(nodeProps: NodeProps) {
     return (
         <div className={"sequence-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
@@ -48,7 +46,7 @@ export function BTSequenceNode(nodeProps: NodeProps<BtDisplayNode>) {
     );
 }
 
-export function BTSimpleParallelNode(nodeProps: NodeProps<BtDisplayNode>) {
+export function BTSimpleParallelNode(nodeProps: NodeProps) {
     return (
         <div className={"sequence-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
@@ -59,12 +57,16 @@ export function BTSimpleParallelNode(nodeProps: NodeProps<BtDisplayNode>) {
     );
 }
 
-export function BTTaskNode(nodeProps: NodeProps<BtDisplayNode>) {
+export function BTTaskNode(nodeProps: NodeProps) {
     return (
         <div className={"task-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
-            <div>Task</div>
-            <Handle type="source" position={Position.Bottom}/>
+            <div>Type: [{nodeProps.data.BttType}]</div>
+            {/*{Object.entries(nodeProps.data).map(([key, item]) => RenderItem(key, item))}*/}
         </div>
     );
 }
+
+// function RenderItem(key: string, value: any) : React.ReactNode {
+//     return (<div>{key}</div>);
+// }

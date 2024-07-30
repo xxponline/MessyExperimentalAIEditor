@@ -22,6 +22,12 @@ export interface IBtContentChangedListener {
     OnCurrentEditingBtDocumentChanged(): void
 }
 
+export interface IInspectorFocusChangedListener {
+    OnInspectorFocusChanged(nodeId: string | null): void;
+}
+
+
+
 export class BehaviourTreeModel {
     private static _instance : BehaviourTreeModel | null = null;
     private constructor() {
@@ -47,7 +53,6 @@ export class BehaviourTreeModel {
                 (ntfMsg) => {
                     this.OnNtfReadBehaviourTrees(ntfMsg)
                 });
-
             this._isInitialized = true;
         }
     }
@@ -159,17 +164,28 @@ export class BehaviourTreeModel {
         }
         this._currentEditingBtAssetPath = path;
         this._currentEditingBtAssetContent = this._btAssetsContentMap.get(path)!
+        //Check And Repair The Base Data For Adaptable
         if(this._currentEditingBtAssetContent.btNodes === null) {
             this._currentEditingBtAssetContent.btNodes = [];
-            if(this._currentEditingBtAssetContent.btNodes.every((n) => n.type !== 'bt_root')) {
-                this._currentEditingBtAssetContent.btNodes.push({
-                    id: generateUniqueID(),
-                    type: "bt_root",
-                    position: { x : 100, y: 100 },
-                    data: {}
-                });
-            }
         }
+        if(this._currentEditingBtAssetContent.btNodes.every((n) => n.type !== 'bt_root')) {
+            this._currentEditingBtAssetContent.btNodes.push({
+                id: generateUniqueID(),
+                type: "bt_root",
+                position: { x : 100, y: 100 },
+                data: {}
+            });
+        }
+
+        this._currentEditingBtAssetContent.btNodes.forEach((n) => {
+            if(n.type == "bt_task") {
+                if( n.data.BttType === undefined){
+                    n.data.BttType = "BTT_None";
+                    this.FillDefaultNodeContentIfPossible(n);
+                }
+            }
+        });
+
         if(this._currentEditingBtAssetContent.btConnections === null) {
             this._currentEditingBtAssetContent.btConnections = [];
         }
@@ -177,7 +193,15 @@ export class BehaviourTreeModel {
     }
 
     public GetEditingBtAssetContent() : [ Array<ILogicBtNode>, Array<ILogicBtConnection> ] {
-        return [this._currentEditingBtAssetContent!.btNodes, this._currentEditingBtAssetContent!.btConnections];
+        return [this.GetEditingBtAssetContentNodes(), this.GetEditingBtAssetContentConnections()];
+    }
+
+    public GetEditingBtAssetContentNodes() : Array<Readonly<ILogicBtNode>> {
+        return this._currentEditingBtAssetContent!.btNodes;
+    }
+
+    public GetEditingBtAssetContentConnections() : Array<Readonly<ILogicBtConnection>> {
+        return this._currentEditingBtAssetContent!.btConnections;
     }
 
 
@@ -228,25 +252,80 @@ export class BehaviourTreeModel {
 
     }
 
+    public UpdateNodeDetailInEditingDocument(nodeId: string, nodeDetailContent: { [key: string] : any }) {
+        if(this._currentEditingBtAssetContent !== null) {
+            let goalNode = this._currentEditingBtAssetContent.btNodes.find(n => n.id === nodeId);
+            if(goalNode) {
+                let oldBttType = goalNode!.data.BttType;
+                goalNode.data = {...goalNode.data, ...nodeDetailContent}
+                if(goalNode.data.BttType !== oldBttType) {
+                    this.FillDefaultNodeContentIfPossible(goalNode);
+                }
+            }
+        }
+    }
+
+    private FillDefaultNodeContentIfPossible(node: ILogicBtNode) {
+        if(node.data.BttType !== undefined) {
+            let types = BehaviourTreeModel.Instance.GetBTTTypes();
+            let currentType = types.find(
+                (t) => t.BttType === node.data.BttType
+            );
+
+            Object.entries(currentType!.Content).map(([key, item]) => {
+                if(node.data[key] === undefined) {
+                    if(item.default) {
+                        node.data[key] = item.default;
+                    }
+                }
+            });
+        }
+    }
+
+
+    private _nodeDetailFocusChangedListener: IInspectorFocusChangedListener | null = null;
+    private _currentInspectorFocusId : string | null = null;
+    public get CurrentInspectorFocusId () { return this._currentInspectorFocusId }
+
+    public SetInspectNodeChangeListener(listener: IInspectorFocusChangedListener | null): void {
+        this._nodeDetailFocusChangedListener = listener;
+    }
+
+    public InspectNodeDetail(nodeId: string | null): void {
+        if( this._currentInspectorFocusId !== nodeId ) {
+            this._currentInspectorFocusId = nodeId;
+            this._nodeDetailFocusChangedListener?.OnInspectorFocusChanged(nodeId);
+        }
+    }
+
+
     //Query Behaviour Tree Task Types
-    public GetBTTTypes() : { taskType: string, Content: {} }[] {
+    public GetBTTTypes() : { BttType: string, Content: object }[] {
         let BTTTypes = [
             {
-                taskType : "None",
+                BttType : "BTT_None",
                 Content: {}
             },
             {
-                taskType : "Debug",
+                BttType : "BTT_Debug",
                 Content: {
-                    DebugLogLevel: { type: "Enum", OptionalItems: ["Log", "Warning", "Assert", "Error"] },
-                    OutputContent: { type: "String" },
-                    CheckBox: { type: "Boolean" },
+                    DebugLogLevel: { type: "Enum", default: "Log", OptionalItems: ["Log", "Warning", "Assert", "Error"] },
+                    OutputContent: { type: "String", default: "" },
 
-                    IntMember_Range: { type: "Int", range: [1, 1000] },
-                    IntMember: { type: "Int" },
-                    FloatMember_Range: { type: "Float", range: [1, 1000] },
-                    FloatMember: { type: "Float" },
-                    BBKeyMember: { type: "BBKey" },
+                    // CheckBox: { type: "Boolean", default: false },
+                    //
+                    // IntMember_Range: { type: "Int", default: 1, range: [1, 1000] },
+                    // IntMember: { type: "Int", default: 1 },
+                    // FloatMember_Range: { type: "Float", default: 1.0, range: [1.0, 1000.0] },
+                    // FloatMember: { type: "Float", default: 1.0 },
+                    // BBKeyMember: { type: "BBKey" },
+                }
+            },
+            {
+                BttType : "BTT_Wait",
+                Content: {
+                    WaitTime: { type: "Float", default: 5 },
+                    IgnoreScale: { type: "Boolean", default: false }
                 }
             },
         ]

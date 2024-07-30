@@ -3,6 +3,7 @@ import {IEditorFrameworkRenderParameters} from "../viewmodels/EditorFrameworkVie
 import {NetStateEnum} from "../service/NetManager";
 import {BtAssetExplorerViewModel} from "../viewmodels/BehaviourTree/BtAssetExplorerViewModel";
 import {BtAssetEditorViewModel} from "../viewmodels/BehaviourTree/BtAssetEditorViewModel";
+import {BtNodeInspectorViewModel} from "../viewmodels/BehaviourTree/BtNodeInspectorViewModel";
 
 export class EditorFrameworkView extends React.Component<IEditorFrameworkRenderParameters, { } > {
     render() {
@@ -38,12 +39,15 @@ export class EditorFrameworkView extends React.Component<IEditorFrameworkRenderP
                     <div style={{width: "100vw", height: "100vh"}}>
                         <div style={{width: "100%", height: "40px", backgroundColor: "#ccc"}}>
                         </div>
-                        <div style={{width: "100%", height:"100%", display: "flex", flexDirection: "row"}}>
-                            <div style={{width: "400px", height:"100%"}}>
+                        <div style={{width: "100%", height: "100%", display: "flex", flexDirection: "row"}}>
+                            <div style={{width: "400px", height: "100%"}}>
                                 <BtAssetExplorerViewModel/>
                             </div>
-                            <div style={{width: "100%", height:"100%", backgroundColor: "green"}}>
+                            <div style={{width: "100%", height: "100%", backgroundColor: "green"}}>
                                 <BtAssetEditorViewModel/>
+                            </div>
+                            <div style={{width: "500px", height: "100%"}}>
+                                <BtNodeInspectorViewModel/>
                             </div>
                         </div>
                     </div>

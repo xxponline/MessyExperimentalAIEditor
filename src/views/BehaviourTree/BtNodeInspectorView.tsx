@@ -1,12 +1,11 @@
 import React from "react";
 import {IBtNodeInspectorViewProps} from "../../viewmodels/BehaviourTree/BtNodeInspectorViewModel";
-import {FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField} from "@mui/material";
-import {NumericFormat, NumericFormatProps} from "react-number-format";
 import {BooleanEditableTerm} from "../AttributeEditableTerm/BooleanEditableTerm";
 import {EnumEditorTerm} from "../AttributeEditableTerm/EnumEditableTerm";
 import {StringEditableTerm} from "../AttributeEditableTerm/StringEditableTerm";
 import {IntEditableTerm} from "../AttributeEditableTerm/IntEditableTerm";
 import {FloatEditableTerm} from "../AttributeEditableTerm/FloatEditableTerm";
+import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
 
 export class BtNodeInspectorView extends React.Component<
     IBtNodeInspectorViewProps,
@@ -16,54 +15,70 @@ export class BtNodeInspectorView extends React.Component<
         super(props);
     }
 
-    private setCurrentTaskType(taskType: string) {
-        this.setState( { currentType: taskType } );
-    }
-
-    private elementRef = React.createRef<HTMLInputElement>();
-
     render() {
         return (
-            <div style={{ position: "absolute", width: "300px", height: "500px",
+            <div style={{
+                width: "100%", height: "100%",
                 backgroundColor: "#ffffffe0", top: "50px", right: "100px", zIndex: 5, padding: "10px",
                 display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "10px"
             }}>
-
-                <EnumEditorTerm label="TaskType"
+                <EnumEditorTerm label="TaskType" key="TaskTypeKey"
                                 currentItem={this.props.CurrentType}
                                 optionalItems={this.props.ValidTypes}
-                                onValueChange={(type) => { this.props.Helper.SelectType(type) }}
+                                onValueChange={(type) => { this.props.Helper.UpdateType(type) }}
                 />
                 {
-                    Object.entries(this.props.SettingContent).map(([key, item]) =>
-                        this.RenderContentItem(key, item)
+                    Object.entries(this.props.SettingTerms).map(([key, item]) =>
+                        this.RenderContentItem(key, item, this.props.SettingContent[key])
                     )
                 }
             </div>
         );
     }
 
-    private RenderContentItem(key: string, content: any) : React.ReactNode {
-        switch (content.type) {
+    private RenderContentItem(key: string, meta: any, value: any) : React.ReactNode {
+        switch (meta.type) {
             case "String":
                 return (
-                    <StringEditableTerm label={key} />
+                    <StringEditableTerm
+                        key={generateUniqueID()}
+                        label={key} value={value}
+                        onValueChange={(value) => { this.props.Helper.UpdateSettings(key, value) }}
+                    />
                 );
             case "Int":
                 return (
-                    <IntEditableTerm defaultValue={0} label={key} />
+                    <IntEditableTerm
+                        key={generateUniqueID()}
+                        value={value} label={key}
+                        onValueChange={(value) => { this.props.Helper.UpdateSettings(key, value) }}
+                    />
                 );
             case "Float":
                 return (
-                    <FloatEditableTerm defaultValue={0.1} label={key} />
+                    <FloatEditableTerm
+                        key={generateUniqueID()}
+                        value={value} label={key}
+                        onValueChange={(value) => { this.props.Helper.UpdateSettings(key, value) }}
+                    />
                 );
             case "Enum":
                return (
-                   <EnumEditorTerm label={key} currentItem={content.OptionalItems[0]} optionalItems={content.OptionalItems} />
+                   <EnumEditorTerm
+                       key={generateUniqueID()}
+                       label={key}
+                       currentItem={value}
+                       optionalItems={meta.OptionalItems}
+                       onValueChange={(v) => this.props.Helper.UpdateSettings(key, v)}
+                   />
                );
             case "Boolean":
                 return (
-                    <BooleanEditableTerm label={key} defaultValue={false} />
+                    <BooleanEditableTerm
+                        key={generateUniqueID()}
+                        label={key} value={value}
+                        onValueChange={(v) => this.props.Helper.UpdateSettings(key, v)}
+                    />
                 );
             // case "BBKey":
             //     return (
@@ -76,29 +91,3 @@ export class BtNodeInspectorView extends React.Component<
     }
 }
 
-interface CustomProps {
-    onChange: (event: { target: { name: string; value: string } }) => void;
-    name: string;
-}
-
-const NumericFormatCustom = React.forwardRef<NumericFormatProps, CustomProps>(
-    function NumericFormatCustom(props, ref) {
-        const { onChange, ...other } = props;
-
-        return (
-            <NumericFormat
-                {...other}
-                getInputRef={ref}
-                onValueChange={(values) => {
-                    onChange({
-                        target: {
-                            name: props.name,
-                            value: values.value,
-                        },
-                    });
-                }}
-                valueIsNumericString
-            />
-        );
-    },
-);

@@ -41,7 +41,6 @@ export class BtAssetExplorerViewModel extends React.Component<
         let goalSummary = BehaviourTreeModel.Instance.BtAssetsList.find(m => m.assetGuid === guid);
         if(goalSummary) {
             BehaviourTreeModel.Instance.ChangeEditingBtAsset(goalSummary.assetPath).then((result) => {
-                console.log(result);
             })
         }
     }

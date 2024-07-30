@@ -78,7 +78,7 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
                 id: n.id,
                 type: n.type,
                 position: n.position,
-                data: {},
+                data: n.data,
             }
         });
         this.setState((preState) => (
@@ -99,6 +99,7 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
             { Edges: preState.Edges.concat(additionEdges) }
         ))
     }
+
     OnRemoveElement(nodeIds: string[], connectionIds: string[]): void {
         throw new Error("Method not implemented.");
     }
@@ -111,7 +112,7 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
                 id: n.id,
                 type: n.type,
                 position: n.position,
-                data: {},
+                data: n.data,
             }
         });
         let displayConnections = logicConnections.map<BtDisplayEdge>((c) => {
@@ -130,10 +131,12 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
     //ReactFlow Need Method
 
     onNodesChange(changes: NodeChange[]) {
+        let hasSelecting = false;
         for(let changeItem of changes) {
             switch (changeItem.type) {
                 case "select":
                 {
+                    hasSelecting = true;
                     let changeDetailItem: NodeSelectionChange = changeItem;
                     for( let node of this.state.Nodes) {
                         if (changeDetailItem.id === node.id) {
@@ -171,6 +174,16 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
                     break;
             }
         }
+        if (hasSelecting) {
+            let selectedNodes = this.state.Nodes.filter((n) => n.selected == true);
+            if (selectedNodes.length === 1) {
+                BehaviourTreeModel.Instance.InspectNodeDetail(selectedNodes[0].id);
+            }
+            else{
+                BehaviourTreeModel.Instance.InspectNodeDetail(null);
+            }
+        }
+
     }
 
     onEdgesChange(changes: EdgeChange[]) {

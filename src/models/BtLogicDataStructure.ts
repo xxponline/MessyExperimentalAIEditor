@@ -1,5 +1,5 @@
 export interface IBtNodeData {
-
+    BttType: string
 }
 
 export interface ILogicBtNode {

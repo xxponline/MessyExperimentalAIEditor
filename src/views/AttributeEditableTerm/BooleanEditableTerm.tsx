@@ -1,31 +1,35 @@
 import React from "react";
-import {Checkbox, FormControlLabel, Switch} from "@mui/material";
+import {FormControlLabel, Switch} from "@mui/material";
 
 export class BooleanEditableTerm extends React.Component<
-    { label: string, defaultValue: boolean, onValueChange?: ((value: boolean) => void) },
-    { checked: boolean }> {
+    {
+        label: string,
+        value: boolean,
+        onValueChange?: ((value: boolean) => void)
+    },
+    {
+        currentValue : boolean;
+    } > {
     constructor(props : any) {
         super(props);
         this.state = {
-            checked: this.props.defaultValue
+            currentValue : this.props.value
         }
     }
 
-    private SwitchChecked() {
-        this.setState((prevState) => ({
-            checked: !prevState.checked
-        }));
-        if(this.props.onValueChange) {
-            this.props.onValueChange!(this.state.checked);
-        }
-
+    private SetValue(value: boolean) {
+        this.setState({currentValue : value});
+        this.props.onValueChange?.(value);
     }
 
     render() {
         return(
-            <FormControlLabel onClick={() => {this.SwitchChecked()}}
-                              control={<Switch checked={this.state.checked} />}
-                              label={this.props.label} />
+            <FormControlLabel control={
+                <Switch
+                    checked={this.state.currentValue}
+                    onChange={ (e) => this.SetValue(e.target.checked) }
+                />
+            } label={this.props.label} />
         );
     }
 }

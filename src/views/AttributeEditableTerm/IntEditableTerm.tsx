@@ -1,25 +1,49 @@
 import React from "react";
 import {TextField} from "@mui/material";
+import { NumericFormat } from 'react-number-format';
 
 export class IntEditableTerm extends React.Component<
-    { label: string, defaultValue?: number },
-    { value: number }> {
+    {
+        label: string,
+        value: number,
+        onValueChange?: ((value: number) => void)
+    },
+    {
+        currentValue : number;
+    }> {
     constructor(props: any) {
         super(props);
         this.state = {
-            value: this.props.defaultValue ?? 0
+            currentValue : this.props.value
         }
+    }
+
+    private SetValue(value: number | undefined) {
+        if(value !== undefined) {
+            this.setState({currentValue : value});
+        }
+        else {
+            this.setState({currentValue : 0});
+        }
+    }
+
+    private CheckAndSave() {
+        this.props.onValueChange?.(this.state.currentValue);
     }
 
     render() {
         return(
-            <TextField id="outlined-basic"
-                       label={this.props.label}
-                       defaultValue={this.props.defaultValue ?? ""}
-                       value={this.state.value}
-                       onChange={(e) => {}}
-                       variant="standard"
-                       fullWidth/>
+            <NumericFormat
+                label={this.props.label}
+                value={this.state.currentValue}
+                customInput={TextField}
+                onValueChange={(v) => { this.SetValue(v.floatValue)}}
+                onBlur={(e) => { this.CheckAndSave() }}
+                variant="standard"
+                decimalScale={0}
+                thousandSeparator
+                allowLeadingZeros={false}
+                fullWidth/>
         );
     }
 }
