@@ -92,7 +92,7 @@ export class BtAssetEditorMenuView
                         <p style={{margin: '0.5em'}}>
                             {/*<small>node: {this.props.toolUtils.SelectedNodes![0].id}</small>*/}
                         </p>
-                        <button onClick={()=>{}}>duplicate</button>
+                        {/*<button onClick={ () => { this.props.editorHelper.RemoveNode() } }>duplicate</button>*/}
                         <button onClick={()=>{}}>delete</button>
                     </div>
                 );

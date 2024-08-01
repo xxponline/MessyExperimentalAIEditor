@@ -1,20 +1,25 @@
 import React from "react";
 import {BtNodeInspectorView} from "../../views/BehaviourTree/BtNodeInspectorView";
 import {BehaviourTreeModel, IInspectorFocusChangedListener} from "../../models/BehaviourTreeModel";
+import {BtNodeType} from "../../common/BtCommon";
+import {IBttNodeData} from "../../models/BtLogicDataStructure";
 
 export interface IBtNodeInspectorViewProps {
-    ValidTypes: Array<string>;
-    CurrentType: string;
-    SettingTerms: {};
-    SettingContent: { [key: string] : any };
+    BttViewInfo: {
+        ValidTypes: Array<string>;
+        CurrentType: string;
+        SettingTerms: {};
+        SettingContent: { [key: string] : any };
+    } | null
 
+    NodeType : BtNodeType
     InspectNodeId: string | null;
 
     Helper: IBtNodeInspectorHelper
 }
 
 export interface IBtNodeInspectorHelper {
-    UpdateType(currentTypeName: string): void;
+    UpdateBttType(currentTypeName: string): void;
 
     UpdateSettings(settingItermKey: string, settingValue: any): void;
 }
@@ -27,11 +32,8 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
     constructor(props: IBtNodeInspectorViewProps) {
         super(props);
         this.state = {
-            ValidTypes: [],
-            CurrentType: "",
-            SettingTerms: {},
-            SettingContent: {},
-
+            BttViewInfo: null,
+            NodeType : "bt_selector",
             InspectNodeId: null,
 
             Helper: this
@@ -41,18 +43,30 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
     OnInspectorFocusChanged(nodeId: string | null): void {
         if(nodeId !== null) {
             let node = BehaviourTreeModel.Instance.GetEditingBtAssetContentNodes().find((m) => m.id === nodeId);
-            if(node?.type === "bt_task") {
-                let types = BehaviourTreeModel.Instance.GetBTTTypes();
-                let currentType = types.find(
-                    (t) => t.BttType === node!.data.BttType
-                );
-                this.setState({
-                    InspectNodeId: nodeId,
-                    ValidTypes: types.map((t) => t.BttType),
-                    CurrentType: node!.data.BttType,
-                    SettingTerms: currentType!.Content,
-                    SettingContent: node!.data
-                });
+            if(node) {
+                if(node.type === "bt_task") {
+                    let bttData = node.data!;
+                    let types = BehaviourTreeModel.Instance.GetBTTTypes();
+                    let currentType = types.find(
+                        (t) => t.BttType === bttData.BttType
+                    );
+                    this.setState({
+                        InspectNodeId: nodeId,
+                        NodeType: "bt_task",
+                        BttViewInfo: {
+                            ValidTypes: types.map((t) => t.BttType),
+                            CurrentType: node.data!.BttType,
+                            SettingTerms: currentType!.Content,
+                            SettingContent: node.data!
+                        }
+                    });
+                }
+                else {
+                    this.setState({NodeType: node.type, InspectNodeId: node.id});
+                }
+            }
+            else {
+                this.setState({InspectNodeId: null});
             }
         }
         else {
@@ -68,20 +82,24 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
         BehaviourTreeModel.Instance.SetInspectNodeChangeListener(null);
     }
 
-    public UpdateType(newBttType: string) {
+    public UpdateBttType(newBttType: string) {
         let currentNodeId = BehaviourTreeModel.Instance.CurrentInspectorFocusId;
-        console.log("111111");
-        console.log(newBttType);
         if(currentNodeId === null) {
             return;
         }
 
         let node = BehaviourTreeModel.Instance.GetEditingBtAssetContentNodes().find((m) => m.id === currentNodeId);
-        if(node === undefined){
+        if(node === undefined) {
             return;
         }
 
-        if(node.data.BttType === newBttType) {
+        if(node.type !== "bt_task") {
+            return;
+        }
+
+        let bttData : IBttNodeData = node.data as IBttNodeData;
+
+        if(bttData.BttType === newBttType) {
             return;
         }
 
@@ -96,10 +114,12 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
 
         if(currentType) {
             this.setState({
-                ValidTypes: types.map((t) => t.BttType),
-                CurrentType: newBttType,
-                SettingTerms: currentType.Content,
-                SettingContent: node.data
+                BttViewInfo: {
+                    ValidTypes: types.map((t) => t.BttType),
+                    CurrentType: newBttType,
+                    SettingTerms: currentType.Content,
+                    SettingContent: bttData
+                }
             });
         }
     }
@@ -115,6 +135,6 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
     }
 
     render() {
-        return this.state.InspectNodeId !== null ? <BtNodeInspectorView {...this.state} /> : (null)
+        return this.state.InspectNodeId !== null ? <BtNodeInspectorView {...this.state} /> : (null);
     }
 }

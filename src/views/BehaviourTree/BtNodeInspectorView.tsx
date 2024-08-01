@@ -16,24 +16,43 @@ export class BtNodeInspectorView extends React.Component<
     }
 
     render() {
-        return (
-            <div style={{
-                width: "100%", height: "100%",
-                backgroundColor: "#ffffffe0", top: "50px", right: "100px", zIndex: 5, padding: "10px",
-                display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "10px"
-            }}>
-                <EnumEditorTerm label="TaskType" key="TaskTypeKey"
-                                currentItem={this.props.CurrentType}
-                                optionalItems={this.props.ValidTypes}
-                                onValueChange={(type) => { this.props.Helper.UpdateType(type) }}
-                />
-                {
-                    Object.entries(this.props.SettingTerms).map(([key, item]) =>
-                        this.RenderContentItem(key, item, this.props.SettingContent[key])
-                    )
-                }
-            </div>
-        );
+        if(this.props.NodeType === "bt_task") {
+            let viewInfo = this.props.BttViewInfo!;
+            return (
+                <div style={{
+                    width: "100%", height: "100%",
+                    backgroundColor: "#ffffffe0", top: "50px", right: "100px", zIndex: 5, padding: "10px",
+                    display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "10px"
+                }}>
+                    <div>NodeType: {this.props.NodeType}</div>
+                    <div>NodeId: {this.props.InspectNodeId}</div>
+                    <EnumEditorTerm label="TaskType" key="TaskTypeKey"
+                                    currentItem={viewInfo.CurrentType}
+                                    optionalItems={viewInfo.ValidTypes}
+                                    onValueChange={(type) => {
+                                        this.props.Helper.UpdateBttType(type)
+                                    }}
+                    />
+                    {
+                        Object.entries(viewInfo.SettingTerms).map(([key, item]) =>
+                            this.RenderContentItem(key, item, viewInfo.SettingContent[key])
+                        )
+                    }
+                </div>
+            );
+        } else {
+            return (
+                <div style={{
+                    width: "100%", height: "100%",
+                    backgroundColor: "#ffffffe0", top: "50px", right: "100px", zIndex: 5, padding: "10px",
+                    display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "10px"
+                }}>
+                    <div>NodeType: {this.props.NodeType}</div>
+                    <div>NodeId: {this.props.InspectNodeId}</div>
+                </div>
+            );
+        }
+
     }
 
     private RenderContentItem(key: string, meta: any, value: any) : React.ReactNode {

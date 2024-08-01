@@ -1,6 +1,6 @@
 import React from "react";
 import {BtAssetEditorView} from "../../views/BehaviourTree/BtAssetEditorView";
-import {EdgeChange, NodeChange, NodePositionChange} from "reactflow";
+import {EdgeChange, NodeChange, NodePositionChange, NodeRemoveChange} from "reactflow";
 import {NodeSelectionChange} from "@reactflow/core/dist/esm/types/changes";
 import {BehaviourTreeModel, IBtContentChangedListener} from "../../models/BehaviourTreeModel";
 import {BtDisplayEdge, BtDisplayNode} from "../../views/BehaviourTree/BtAssetEditorNodeDisplay";
@@ -17,7 +17,7 @@ interface IBtEditorClassState {
 export interface IBtAssetEditorHelper {
     CreateNode(type: BtNodeType, pos: EditorPosition): void;
 
-    RemoveNode(id: string): void;
+    RemoveNode(nodeIds: string[]): void;
 
     LinkNode(source: string, target: string): void;
 
@@ -53,8 +53,8 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
     CreateNode(type: BtNodeType, pos: EditorPosition): void {
         BehaviourTreeModel.Instance.CreateNodeInEditingDocument(type, pos);
     }
-    RemoveNode(id: string): void {
-        throw new Error("Method not implemented.");
+    RemoveNode(nodeIds: string[]): void {
+        BehaviourTreeModel.Instance.RemoveNodeInEditingDocument(nodeIds);
     }
     LinkNode(source: string, target: string): void {
         throw new Error("Method not implemented.");
@@ -101,7 +101,12 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
     }
 
     OnRemoveElement(nodeIds: string[], connectionIds: string[]): void {
-        throw new Error("Method not implemented.");
+        this.setState((preState) => (
+            {
+                Nodes: preState.Nodes.filter((n) => !nodeIds.includes(n.id)),
+                Edges: preState.Edges.filter((c) => !connectionIds.includes(c.id)),
+            }
+        ));
     }
 
     OnCurrentEditingBtDocumentChanged(): void {
@@ -131,42 +136,27 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
     //ReactFlow Need Method
 
     onNodesChange(changes: NodeChange[]) {
-        let hasSelecting = false;
+        let selectChangeItems : NodeSelectionChange[] = [];
+        let positionChangeItems : NodePositionChange[] = [];
+        let removeChangeItems : NodeRemoveChange[] = [];
+
         for(let changeItem of changes) {
             switch (changeItem.type) {
                 case "select":
                 {
-                    hasSelecting = true;
-                    let changeDetailItem: NodeSelectionChange = changeItem;
-                    for( let node of this.state.Nodes) {
-                        if (changeDetailItem.id === node.id) {
-                            node.selected = changeDetailItem.selected;
-                        }
-                    }
+                    selectChangeItems.push(changeItem);
                 }
                     break;
                 case "position":
                 {
-                    let changeDetailItem: NodePositionChange = changeItem;
-                    this.setState((prevState) => ({
-                        Nodes: prevState.Nodes.map((node) => {
-                            let result = node;
-                            if(changeDetailItem.id === node.id) {
-                                if(changeDetailItem.dragging === true) {
-                                    result.position = changeDetailItem.position!;
-                                    result.positionAbsolute = changeDetailItem.positionAbsolute;
-                                }
-                                else {
-                                    BehaviourTreeModel.Instance.MoveNode({Id: node.id, ...node.position});
-                                }
-                            }
-                            return result;
-                        }),
-                    }));
+                    positionChangeItems.push(changeItem);
                 }
                     break;
                 case "dimensions":
                     //there nothing to do when get dimensions NodeChange event
+                    break;
+                case "remove":
+                    removeChangeItems.push(changeItem);
                     break;
                 default:
                     console.error(changeItem);
@@ -174,8 +164,21 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
                     break;
             }
         }
+
+
+        ////
+        let hasSelecting = false;
+        for(let changeItem of selectChangeItems) {
+            hasSelecting = true;
+            for( let node of this.state.Nodes) {
+                if (changeItem.id === node.id) {
+                    node.selected = changeItem.selected;
+                }
+            }
+        }
+
         if (hasSelecting) {
-            let selectedNodes = this.state.Nodes.filter((n) => n.selected == true);
+            let selectedNodes = this.state.Nodes.filter((n) => n.selected === true);
             if (selectedNodes.length === 1) {
                 BehaviourTreeModel.Instance.InspectNodeDetail(selectedNodes[0].id);
             }
@@ -183,6 +186,33 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
                 BehaviourTreeModel.Instance.InspectNodeDetail(null);
             }
         }
+        ////
+
+        ////
+        for(let changeItem of positionChangeItems) {
+            this.setState((prevState) => ({
+                Nodes: prevState.Nodes.map((node) => {
+                    let result = node;
+                    if(changeItem.id === node.id) {
+                        if(changeItem.dragging === true) {
+                            result.position = changeItem.position!;
+                            result.positionAbsolute = changeItem.positionAbsolute;
+                        }
+                        else {
+                            BehaviourTreeModel.Instance.MoveNode({Id: node.id, ...node.position});
+                        }
+                    }
+                    return result;
+                }),
+            }));
+        }
+        ////
+
+        //// Remove
+        if(removeChangeItems.length > 0) {
+            BehaviourTreeModel.Instance.RemoveNodeInEditingDocument(removeChangeItems.map(m => m.id));
+        }
+        ////
 
     }
 

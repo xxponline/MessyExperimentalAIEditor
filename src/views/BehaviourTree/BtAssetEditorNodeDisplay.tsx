@@ -2,11 +2,11 @@ import {Handle, Node, NodeProps, Position} from "reactflow";
 import {Edge} from "@reactflow/core/dist/esm/types/edges";
 
 import "./BtAssetEditorNode.css"
-import {IBtNodeData} from "../../models/BtLogicDataStructure";
+import {IBtcNodeData, IBttNodeData} from "../../models/BtLogicDataStructure";
 import React from "react";
 
 export type BtDisplayEdge = Edge<any>;
-export type BtDisplayNode = Node<IBtNodeData, string>;
+export type BtDisplayNode = Node<IBttNodeData | IBtcNodeData | null, string>;
 
 
 function getCss(nodeProps: NodeProps): React.CSSProperties {
@@ -61,7 +61,7 @@ export function BTTaskNode(nodeProps: NodeProps) {
     return (
         <div className={"task-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
-            <div>Type: [{nodeProps.data.BttType}]</div>
+            <div>Type: [{nodeProps.data.BttType}] [{nodeProps.data.Order}]</div>
             {/*{Object.entries(nodeProps.data).map(([key, item]) => RenderItem(key, item))}*/}
         </div>
     );

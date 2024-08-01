@@ -4,7 +4,7 @@ import {
     NtfNetMessage,
     ReadBtAssetNtfMessage
 } from "../service/NetMessage";
-import {BtAssetDetail, BtAssetSummary, ILogicBtConnection, ILogicBtNode} from "./BtLogicDataStructure";
+import {BtAssetDetail, BtAssetSummary, IBttNodeData, ILogicBtConnection, ILogicBtNode} from "./BtLogicDataStructure";
 import {IAsyncResult} from "./MethodResult";
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
 import {BtNodeType} from "../common/BtCommon";
@@ -173,14 +173,15 @@ export class BehaviourTreeModel {
                 id: generateUniqueID(),
                 type: "bt_root",
                 position: { x : 100, y: 100 },
-                data: {}
+                data: null
             });
         }
 
         this._currentEditingBtAssetContent.btNodes.forEach((n) => {
             if(n.type == "bt_task") {
-                if( n.data.BttType === undefined){
-                    n.data.BttType = "BTT_None";
+                if( n.data!.BttType === undefined){
+                    n.data!.BttType = "BTT_None";
+                    n.data!.Order = 0;
                     this.FillDefaultNodeContentIfPossible(n);
                 }
             }
@@ -204,12 +205,54 @@ export class BehaviourTreeModel {
         return this._currentEditingBtAssetContent!.btConnections;
     }
 
+    private GetParentNodeFromEditingBtAssetContent(node: ILogicBtNode) : ILogicBtNode | null {
+        if(node.type === "bt_root") {
+            return null;
+        }
+
+        if(this._currentEditingBtAssetContent) {
+            let connectionFromParent= this._currentEditingBtAssetContent
+                .btConnections.find(c => c.target === node.id);
+            if(connectionFromParent) {
+                let result = this._currentEditingBtAssetContent.btNodes
+                    .find(n => n.id == connectionFromParent!.source);
+                if(result !== undefined) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    private GetChildrenNodeFromEditingBtAssetContent(node: ILogicBtNode) : ILogicBtNode[] {
+
+        if(this._currentEditingBtAssetContent) {
+            let connectionsFromParent = this._currentEditingBtAssetContent.btConnections
+                        .filter(c => c.source === node!.id);
+            let connectionIds = connectionsFromParent.map(c => c.target);
+            console.log(connectionIds);
+            return this._currentEditingBtAssetContent.btNodes
+                        .filter(n => connectionIds.includes(n.id));
+        }
+        return []
+    }
+
 
     public MoveNode(moveInfo: { Id: string, x: number, y: number }) {
         if(this._currentEditingBtAssetContent !== null) {
              let beModifiedNode = this._currentEditingBtAssetContent!.btNodes.find((n) => n.id === moveInfo.Id);
              if(beModifiedNode) {
                  beModifiedNode.position = { x: moveInfo.x, y: moveInfo.y };
+
+                 //Resort the order of node and some node witch have the same parent;
+                 let parentNode = this.GetParentNodeFromEditingBtAssetContent(beModifiedNode);
+                 if(parentNode) {
+                     let waitForResortNodes = this.GetChildrenNodeFromEditingBtAssetContent(parentNode);
+                     waitForResortNodes.sort((a,b) => a.position.x - b.position.x);
+                     for(let i = 0; i < waitForResortNodes.length; i++) {
+                         waitForResortNodes[i].data!.Order = i;
+                     }
+                 }
              }
         }
     }
@@ -220,16 +263,46 @@ export class BehaviourTreeModel {
             let newNode : ILogicBtNode = {
                 id: generateUniqueID(),
                 type: nodeType,
-                data: {
-                },
+                data: null,
                 position: pos
+            }
+            switch (newNode.type) {
+                case "bt_task":
+                    newNode.data = {
+                        BttType: "BTT_None",
+                        Order: 0
+                    }
+                    break;
+                case "bt_root":
+                case "bt_simpleParallel":
+                case "bt_sequence":
+                case "bt_selector":
+                    newNode.data = {
+                        Order: 0
+                    }
+                    break;
+                default:
+                    break;
             }
             this._currentEditingBtAssetContent!.btNodes.push(newNode);
             this._btEditorContentListener?.OnCreateNewNode([newNode]);
         }
     }
 
-    public RemoveNodeInEditingDocument() {
+    public RemoveNodeInEditingDocument(nodeIds: Array<string>) {
+        if(this._currentEditingBtAssetContent) {
+            this._currentEditingBtAssetContent.btNodes = this._currentEditingBtAssetContent.btNodes
+                .filter((n) => !nodeIds.includes(n.id));
+
+            let waitForRemoveConnectionIds : Array<string> = this._currentEditingBtAssetContent.btConnections
+                .filter((c) => nodeIds.includes(c.source) || nodeIds.includes(c.target)).map(c => c.id);
+            console.log(waitForRemoveConnectionIds);
+
+            this._currentEditingBtAssetContent.btConnections = this._currentEditingBtAssetContent.btConnections
+                .filter((c) => !waitForRemoveConnectionIds.includes(c.id));
+
+            this._btEditorContentListener?.OnRemoveElement(nodeIds, waitForRemoveConnectionIds);
+        }
     }
 
     public LinkNodeInEditingDocument(srcId: string, tarId: string) {
@@ -256,26 +329,35 @@ export class BehaviourTreeModel {
         if(this._currentEditingBtAssetContent !== null) {
             let goalNode = this._currentEditingBtAssetContent.btNodes.find(n => n.id === nodeId);
             if(goalNode) {
-                let oldBttType = goalNode!.data.BttType;
-                goalNode.data = {...goalNode.data, ...nodeDetailContent}
-                if(goalNode.data.BttType !== oldBttType) {
-                    this.FillDefaultNodeContentIfPossible(goalNode);
+                switch (goalNode.type) {
+                    case "bt_task":
+                        let oldBttType = goalNode.data!.BttType;
+                        goalNode.data = {...(goalNode.data as IBttNodeData), ...nodeDetailContent}
+                        if(goalNode.data.BttType !== oldBttType) {
+                            this.FillDefaultNodeContentIfPossible(goalNode);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
         }
     }
 
     private FillDefaultNodeContentIfPossible(node: ILogicBtNode) {
-        if(node.data.BttType !== undefined) {
+        if(node.type === "bt_task") {
+            if(node.data!.BttType === undefined) {
+                node.data!.BttType = "BTT_None";
+            }
             let types = BehaviourTreeModel.Instance.GetBTTTypes();
             let currentType = types.find(
-                (t) => t.BttType === node.data.BttType
+                (t) => t.BttType === node.data!.BttType
             );
 
             Object.entries(currentType!.Content).map(([key, item]) => {
-                if(node.data[key] === undefined) {
+                if(node.data![key] === undefined) {
                     if(item.default) {
-                        node.data[key] = item.default;
+                        node.data![key] = item.default;
                     }
                 }
             });

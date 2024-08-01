@@ -1,12 +1,22 @@
-export interface IBtNodeData {
-    BttType: string
+import {BtNodeType} from "../common/BtCommon";
+
+export interface IBttNodeData {
+    BttType: string,
+    Order: number,
+    // Additional members with unknown keys
+    [key: string]: any
+}
+
+export interface IBtcNodeData {
+    Order: number,
+    [key: string]: any
 }
 
 export interface ILogicBtNode {
     id: string,
     position: { x: number, y: number },
-    type: string,
-    data: any
+    type: BtNodeType,
+    data: IBttNodeData | IBtcNodeData | null
 }
 
 export interface ILogicBtConnection {
