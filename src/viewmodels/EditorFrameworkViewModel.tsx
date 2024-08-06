@@ -1,6 +1,7 @@
 import React from "react";
 import {NetManager, NetStateEnum} from "../service/NetManager";
 import {EditorFrameworkView} from "../views/EditorFrameworkView";
+import {BehaviourTreeModel} from "../models/BehaviourTreeModel";
 
 export interface IEditorFrameworkViewModelState {
     NetState: NetStateEnum;
@@ -37,6 +38,7 @@ export class EditorFrameworkViewModel extends
     componentDidMount() {
         NetManager.Instance.Init();
         NetManager.Instance.RegisterNetStateListener(this);
+        BehaviourTreeModel.Instance.Init();
     }
 
     componentWillUnmount() {

@@ -1,4 +1,5 @@
 import {BtAssetDetail, BtAssetSummary} from "../models/BtLogicDataStructure";
+import {BttNodeMeta} from "../common/BtCommon";
 
 export type NetMsgType = 'req' | 'ack' | 'ntf';
 
@@ -40,4 +41,10 @@ export class ReadBtAssetNtfMessage extends NtfNetMessage {
     msgType: 'ntf' = 'ntf';
     ntfOperation!: string;
     ntfOpContent!: BtAssetDetail
+}
+
+export class BttNodeMetaNtfMessage extends NtfNetMessage {
+    msgType: 'ntf' = 'ntf';
+    ntfOperation!: string;
+    ntfOpContent!: BttNodeMeta[]
 }

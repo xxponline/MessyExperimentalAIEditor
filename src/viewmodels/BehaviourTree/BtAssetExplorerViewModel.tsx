@@ -46,7 +46,6 @@ export class BtAssetExplorerViewModel extends React.Component<
     }
 
     componentDidMount() {
-        BehaviourTreeModel.Instance.Init();
         BehaviourTreeModel.Instance.RegisterBtAssetsChangeListener(this);
         this.RefreshBtAssetsList();
     }

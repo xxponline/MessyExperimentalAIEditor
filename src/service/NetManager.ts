@@ -1,6 +1,7 @@
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
 import {AckNetMessage, BaseNetMessage, NtfNetMessage, ReqNetMessage} from "./NetMessage";
 import {INetStateListener} from "../viewmodels/EditorFrameworkViewModel";
+import {BehaviourTreeModel} from "../models/BehaviourTreeModel";
 
 export enum NetStateEnum {
     StateOffline,
@@ -125,8 +126,10 @@ export class NetManager{
     }
 
     private OnWSOpen(ev: Event) {
-        this._netState = NetStateEnum.StateConnected;
-        this._netStateListener?.OnNetStateChange(this.NetState, null);
+        BehaviourTreeModel.Instance.RequestBehaviourTreesBttNodeMetas().then((msg) => {
+            this._netState = NetStateEnum.StateConnected;
+            this._netStateListener?.OnNetStateChange(this.NetState, null);
+        });
     }
 
     private OnWSClose(ev: CloseEvent) {

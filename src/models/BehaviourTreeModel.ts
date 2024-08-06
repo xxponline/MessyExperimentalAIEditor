@@ -1,13 +1,13 @@
 import {NetManager} from "../service/NetManager";
 import {
-    AckMessageCode, ListBtAssetsNtfMessage,
+    AckMessageCode, BttNodeMetaNtfMessage, ListBtAssetsNtfMessage,
     NtfNetMessage,
     ReadBtAssetNtfMessage
 } from "../service/NetMessage";
 import {BtAssetDetail, BtAssetSummary, IBttNodeData, ILogicBtConnection, ILogicBtNode} from "./BtLogicDataStructure";
 import {IAsyncResult} from "./MethodResult";
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
-import {BtNodeType} from "../common/BtCommon";
+import {BtNodeType, BttNodeMeta} from "../common/BtCommon";
 import {EditorPosition} from "../common/EditorCommon";
 
 
@@ -52,6 +52,10 @@ export class BehaviourTreeModel {
             NetManager.Instance.RegisterNtfListener("/BehaviourTree/ReadBehaviourTree",
                 (ntfMsg) => {
                     this.OnNtfReadBehaviourTrees(ntfMsg)
+                });
+            NetManager.Instance.RegisterNtfListener("/BehaviourTree/GetBttNodeMetas",
+                (ntfMsg) => {
+                    this.OnNtfBttNodeMetas(ntfMsg)
                 });
             this._isInitialized = true;
         }
@@ -230,7 +234,6 @@ export class BehaviourTreeModel {
             let connectionsFromParent = this._currentEditingBtAssetContent.btConnections
                         .filter(c => c.source === node!.id);
             let connectionIds = connectionsFromParent.map(c => c.target);
-            console.log(connectionIds);
             return this._currentEditingBtAssetContent.btNodes
                         .filter(n => connectionIds.includes(n.id));
         }
@@ -380,38 +383,49 @@ export class BehaviourTreeModel {
         }
     }
 
+    //Btt Node Meta
+    public async RequestBehaviourTreesBttNodeMetas()
+    {
+        return NetManager.Instance.SendRequestMessage("/BehaviourTree/GetBttNodeMetas", {} );
+    }
 
-    //Query Behaviour Tree Task Types
-    public GetBTTTypes() : { BttType: string, Content: object }[] {
-        let BTTTypes = [
-            {
-                BttType : "BTT_None",
-                Content: {}
-            },
-            {
-                BttType : "BTT_Debug",
-                Content: {
-                    DebugLogLevel: { type: "Enum", default: "Log", OptionalItems: ["Log", "Warning", "Assert", "Error"] },
-                    OutputContent: { type: "String", default: "" },
+    private OnNtfBttNodeMetas(msg: NtfNetMessage) : void {
+        this._bttNodeMeta = (msg as BttNodeMetaNtfMessage).ntfOpContent;
+        console.log(this._bttNodeMeta);
+    }
 
-                    // CheckBox: { type: "Boolean", default: false },
-                    //
-                    // IntMember_Range: { type: "Int", default: 1, range: [1, 1000] },
-                    // IntMember: { type: "Int", default: 1 },
-                    // FloatMember_Range: { type: "Float", default: 1.0, range: [1.0, 1000.0] },
-                    // FloatMember: { type: "Float", default: 1.0 },
-                    // BBKeyMember: { type: "BBKey" },
-                }
-            },
-            {
-                BttType : "BTT_Wait",
-                Content: {
-                    WaitTime: { type: "Float", default: 5 },
-                    IgnoreScale: { type: "Boolean", default: false }
-                }
-            },
-        ]
-        return BTTTypes;
+    private _bttNodeMeta : BttNodeMeta[] = [];
+    public GetBTTTypes() : BttNodeMeta[] {
+        return this._bttNodeMeta;
+        // let BTTTypes = [
+        //     {
+        //         BttType : "BTT_None",
+        //         Content: {}
+        //     },
+        //     {
+        //         BttType : "BTT_Debug",
+        //         Content: {
+        //             DebugLogLevel: { type: "Enum", default: "Log", OptionalItems: ["Log", "Warning", "Assert", "Error"] },
+        //             OutputContent: { type: "String", default: "" },
+        //
+        //             // CheckBox: { type: "Boolean", default: false },
+        //             //
+        //             // IntMember_Range: { type: "Int", default: 1, range: [1, 1000] },
+        //             // IntMember: { type: "Int", default: 1 },
+        //             // FloatMember_Range: { type: "Float", default: 1.0, range: [1.0, 1000.0] },
+        //             // FloatMember: { type: "Float", default: 1.0 },
+        //             // BBKeyMember: { type: "BBKey" },
+        //         }
+        //     },
+        //     {
+        //         BttType : "BTT_Wait",
+        //         Content: {
+        //             WaitTime: { type: "Float", default: 5 },
+        //             IgnoreScale: { type: "Boolean", default: false }
+        //         }
+        //     },
+        // ]
+        // return BTTTypes;
     }
 
     public GetBTDTypes() : {}[] {
