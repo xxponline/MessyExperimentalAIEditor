@@ -19,6 +19,22 @@ export interface ILogicBtNode {
     data: IBttNodeData | IBtcNodeData | null
 }
 
+export interface ILogicBtdData {
+    id: string,
+    order: number,
+    btdType: string,
+    // Additional members with unknown keys
+    [key: string]: any
+}
+
+export interface ILogicBtsData {
+    id: string,
+    order: number,
+    btsType: string,
+    // Additional members with unknown keys
+    [key: string]: any
+}
+
 export interface ILogicBtConnection {
     id: string,
     source: string,

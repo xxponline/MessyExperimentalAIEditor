@@ -1,12 +1,9 @@
 import {Handle, Node, NodeProps, Position} from "reactflow";
-import {Edge} from "@reactflow/core/dist/esm/types/edges";
 
 import "./BtAssetEditorNode.css"
-import {IBtcNodeData, IBttNodeData} from "../../models/BtLogicDataStructure";
 import React from "react";
 
-export type BtDisplayEdge = Edge<any>;
-export type BtDisplayNode = Node<IBttNodeData | IBtcNodeData | null, string>;
+
 
 
 function getCss(nodeProps: NodeProps): React.CSSProperties {

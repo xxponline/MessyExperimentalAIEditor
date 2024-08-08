@@ -3,11 +3,11 @@ import {
     AckMessageCode, BttNodeMetaNtfMessage, ListBtAssetsNtfMessage,
     NtfNetMessage,
     ReadBtAssetNtfMessage
-} from "../service/NetMessage";
-import {BtAssetDetail, BtAssetSummary, IBttNodeData, ILogicBtConnection, ILogicBtNode} from "./BtLogicDataStructure";
+} from "../common/NetMessage";
+import {BtAssetDetail, BtAssetSummary, IBttNodeData, ILogicBtConnection, ILogicBtNode} from "../common/BtLogicDS";
 import {IAsyncResult} from "./MethodResult";
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
-import {BtNodeType, BttNodeMeta} from "../common/BtCommon";
+import {BtdNodeMeta, BtNodeType, BtsNodeMeta, BttNodeMeta} from "../common/BtCommon";
 import {EditorPosition} from "../common/EditorCommon";
 
 
@@ -352,7 +352,7 @@ export class BehaviourTreeModel {
             if(node.data!.BttType === undefined) {
                 node.data!.BttType = "BTT_None";
             }
-            let types = BehaviourTreeModel.Instance.GetBTTTypes();
+            let types = BehaviourTreeModel.Instance.GetBTTMetas();
             let currentType = types.find(
                 (t) => t.BttType === node.data!.BttType
             );
@@ -368,18 +368,22 @@ export class BehaviourTreeModel {
     }
 
 
-    private _nodeDetailFocusChangedListener: IInspectorFocusChangedListener | null = null;
+    private _nodeDetailFocusChangedListener: IInspectorFocusChangedListener[] = [];
     private _currentInspectorFocusId : string | null = null;
     public get CurrentInspectorFocusId () { return this._currentInspectorFocusId }
 
-    public SetInspectNodeChangeListener(listener: IInspectorFocusChangedListener | null): void {
-        this._nodeDetailFocusChangedListener = listener;
+    public RegisterInspectNodeChangeListener(listener: IInspectorFocusChangedListener): void {
+        this._nodeDetailFocusChangedListener.push(listener);
+    }
+
+    public UnRegisterInspectNodeChangeListener(listener: IInspectorFocusChangedListener): void {
+        this._nodeDetailFocusChangedListener = this._nodeDetailFocusChangedListener.filter(l => l !== listener);
     }
 
     public InspectNodeDetail(nodeId: string | null): void {
         if( this._currentInspectorFocusId !== nodeId ) {
             this._currentInspectorFocusId = nodeId;
-            this._nodeDetailFocusChangedListener?.OnInspectorFocusChanged(nodeId);
+            this._nodeDetailFocusChangedListener.forEach(l => l.OnInspectorFocusChanged(nodeId))
         }
     }
 
@@ -388,16 +392,13 @@ export class BehaviourTreeModel {
     {
         return NetManager.Instance.SendRequestMessage("/BehaviourTree/GetBttNodeMetas", {} );
     }
-
     private OnNtfBttNodeMetas(msg: NtfNetMessage) : void {
         this._bttNodeMeta = (msg as BttNodeMetaNtfMessage).ntfOpContent;
-        console.log(this._bttNodeMeta);
     }
-
     private _bttNodeMeta : BttNodeMeta[] = [];
-    public GetBTTTypes() : BttNodeMeta[] {
+    public GetBTTMetas() : BttNodeMeta[] {
         return this._bttNodeMeta;
-        // let BTTTypes = [
+        // let BTTTypes: BttNodeMeta[] = [
         //     {
         //         BttType : "BTT_None",
         //         Content: {}
@@ -428,11 +429,25 @@ export class BehaviourTreeModel {
         // return BTTTypes;
     }
 
-    public GetBTDTypes() : {}[] {
-        return [{}]
+
+    public GetBTDMetas() : BtdNodeMeta[] {
+        let BTDTypes: BtdNodeMeta[] = [
+            {
+                BtdType : "BTD_CoolDown",
+                Content: {
+                    CoolDownTime: { type: "Float", default: 1 },
+                    IgnoreTimeScale: { type: "Boolean", default: false }
+                }
+            },
+            {
+                BtdType : "BTD_ForceSuccess",
+                Content: {}
+            },
+        ]
+        return BTDTypes;
     }
 
-    public GetBTSTypes() : {}[] {
-        return [{}]
+    public GetBTSMetas() : BtsNodeMeta[] {
+        return []
     }
 }

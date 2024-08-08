@@ -22,7 +22,7 @@ export interface IEditorFrameworkHelper {
     ConnectToProject(address : string): void
 }
 
-export class EditorFrameworkViewModel extends
+export class BehaviourTreeEditorFramework extends
     React.Component<{}, IEditorFrameworkViewModelState>
     implements INetStateListener, IEditorFrameworkHelper
 {

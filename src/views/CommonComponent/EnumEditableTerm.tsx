@@ -49,7 +49,7 @@ export class EnumEditorTerm extends React.Component<
                 >
                     {
                         this.props.optionalItems.map(
-                            (item : string) => <MenuItem key={generateUniqueID()} value={item}>{item}</MenuItem>
+                            (item : string) => <MenuItem key={item} value={item}>{item}</MenuItem>
                         )
                     }
                 </Select>

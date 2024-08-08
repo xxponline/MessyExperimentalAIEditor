@@ -1,6 +1,6 @@
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
-import {AckNetMessage, BaseNetMessage, NtfNetMessage, ReqNetMessage} from "./NetMessage";
-import {INetStateListener} from "../viewmodels/EditorFrameworkViewModel";
+import {AckNetMessage, BaseNetMessage, NtfNetMessage, ReqNetMessage} from "../common/NetMessage";
+import {INetStateListener} from "../viewmodels/BehaviourTreeEditorFramework";
 import {BehaviourTreeModel} from "../models/BehaviourTreeModel";
 
 export enum NetStateEnum {

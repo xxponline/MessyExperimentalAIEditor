@@ -1,15 +1,15 @@
 import React from "react";
 import {BtNodeInspectorView} from "../../views/BehaviourTree/BtNodeInspectorView";
 import {BehaviourTreeModel, IInspectorFocusChangedListener} from "../../models/BehaviourTreeModel";
-import {BtNodeType} from "../../common/BtCommon";
-import {IBttNodeData} from "../../models/BtLogicDataStructure";
+import {BtNodeType, IMetaContentItem} from "../../common/BtCommon";
+import {IBttNodeData} from "../../common/BtLogicDS";
 
 export interface IBtNodeInspectorViewProps {
     BttViewInfo: {
         ValidTypes: Array<string>;
         CurrentType: string;
-        SettingTerms: {};
-        SettingContent: { [key: string] : any };
+        CurrentTypeMetaContent: IMetaContentItem;
+        SettingsContent: { [key: string] : any };
     } | null
 
     NodeType : BtNodeType
@@ -46,7 +46,7 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
             if(node) {
                 if(node.type === "bt_task") {
                     let bttData = node.data!;
-                    let types = BehaviourTreeModel.Instance.GetBTTTypes();
+                    let types = BehaviourTreeModel.Instance.GetBTTMetas();
                     let currentType = types.find(
                         (t) => t.BttType === bttData.BttType
                     );
@@ -56,8 +56,8 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
                         BttViewInfo: {
                             ValidTypes: types.map((t) => t.BttType),
                             CurrentType: node.data!.BttType,
-                            SettingTerms: currentType!.Content,
-                            SettingContent: node.data!
+                            CurrentTypeMetaContent: currentType!.Content,
+                            SettingsContent: node.data!
                         }
                     });
                 }
@@ -75,11 +75,11 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
     }
 
     componentDidMount() {
-        BehaviourTreeModel.Instance.SetInspectNodeChangeListener(this);
+        BehaviourTreeModel.Instance.RegisterInspectNodeChangeListener(this);
     }
 
     componentWillUnmount() {
-        BehaviourTreeModel.Instance.SetInspectNodeChangeListener(null);
+        BehaviourTreeModel.Instance.UnRegisterInspectNodeChangeListener(this);
     }
 
     public UpdateBttType(newBttType: string) {
@@ -103,7 +103,7 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
             return;
         }
 
-        let types = BehaviourTreeModel.Instance.GetBTTTypes();
+        let types = BehaviourTreeModel.Instance.GetBTTMetas();
         let currentType = types.find(
             (t) => t.BttType === newBttType
         );
@@ -117,8 +117,8 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
                 BttViewInfo: {
                     ValidTypes: types.map((t) => t.BttType),
                     CurrentType: newBttType,
-                    SettingTerms: currentType.Content,
-                    SettingContent: bttData
+                    CurrentTypeMetaContent: currentType.Content,
+                    SettingsContent: bttData
                 }
             });
         }

@@ -1,9 +1,10 @@
 import React from "react";
-import {IEditorFrameworkRenderParameters} from "../viewmodels/EditorFrameworkViewModel";
+import {IEditorFrameworkRenderParameters} from "../viewmodels/BehaviourTreeEditorFramework";
 import {NetStateEnum} from "../service/NetManager";
 import {BtAssetExplorerViewModel} from "../viewmodels/BehaviourTree/BtAssetExplorerViewModel";
 import {BtAssetEditorViewModel} from "../viewmodels/BehaviourTree/BtAssetEditorViewModel";
 import {BtNodeInspectorViewModel} from "../viewmodels/BehaviourTree/BtNodeInspectorViewModel";
+import {BtdInspectorViewModel} from "../viewmodels/BehaviourTree/BtdInspectorViewModel";
 
 export class EditorFrameworkView extends React.Component<IEditorFrameworkRenderParameters, { } > {
     render() {
@@ -37,17 +38,18 @@ export class EditorFrameworkView extends React.Component<IEditorFrameworkRenderP
             case NetStateEnum.StateConnected:
                 renderResult = (
                     <div style={{width: "100vw", height: "100vh"}}>
-                        <div style={{width: "100%", height: "40px", backgroundColor: "#ccc"}}>
+                        <div style={{width: "100%", height: "5vh", backgroundColor: "#ccc"}}>
                         </div>
-                        <div style={{width: "100%", height: "100%", display: "flex", flexDirection: "row"}}>
-                            <div style={{width: "400px", height: "100%"}}>
+                        <div style={{width: "100%", height: "92vh", display: "flex", flexDirection: "row"}}>
+                            <div style={{width: "10%"}}>
                                 <BtAssetExplorerViewModel/>
                             </div>
-                            <div style={{width: "100%", height: "100%", backgroundColor: "green"}}>
+                            <div style={{width: "80%", backgroundColor: "green"}}>
                                 <BtAssetEditorViewModel/>
                             </div>
-                            <div style={{width: "500px", height: "100%"}}>
+                            <div style={{width: "10%"}}>
                                 <BtNodeInspectorViewModel/>
+                                <BtdInspectorViewModel/>
                             </div>
                         </div>
                     </div>

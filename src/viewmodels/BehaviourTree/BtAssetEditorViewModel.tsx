@@ -3,10 +3,10 @@ import {BtAssetEditorView} from "../../views/BehaviourTree/BtAssetEditorView";
 import {EdgeChange, NodeChange, NodePositionChange, NodeRemoveChange} from "reactflow";
 import {NodeSelectionChange} from "@reactflow/core/dist/esm/types/changes";
 import {BehaviourTreeModel, IBtContentChangedListener} from "../../models/BehaviourTreeModel";
-import {BtDisplayEdge, BtDisplayNode} from "../../views/BehaviourTree/BtAssetEditorNodeDisplay";
+import {BtDisplayEdge, BtDisplayNode} from "../../common/BtDisplayDS";
 import {BtNodeType} from "../../common/BtCommon";
 import {EditorPosition} from "../../common/EditorCommon";
-import { ILogicBtNode, ILogicBtConnection } from "../../models/BtLogicDataStructure";
+import { ILogicBtNode, ILogicBtConnection } from "../../common/BtLogicDS";
 import {Connection} from "@reactflow/core/dist/esm/types/general";
 
 interface IBtEditorClassState {
@@ -253,11 +253,15 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
         }
         return (
             <div style={{width: "100%", height: "100%"}}>
-                <div><button onClick={() => {BehaviourTreeModel.Instance.RequestSaveCurrentBtDocumentation().then()}} >Save</button> </div>
-                <div style={{width: "100%", height: "100%"}} >
-                    <BtAssetEditorView {...renderProps} />
-                </div>
+                <BtAssetEditorView {...renderProps} />
             </div>
+
+            // <div>
+            //     <div><button onClick={() => {BehaviourTreeModel.Instance.RequestSaveCurrentBtDocumentation().then()}} >Save</button> </div>
+            //     <div style={{width: "100%", height: "100%"}}>
+            //
+            //     </div>
+            // </div>
         );
     }
 

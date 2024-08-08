@@ -1,8 +1,8 @@
 import React from "react";
 import {TextField} from "@mui/material";
-import { NumericFormat } from 'react-number-format';
+import {NumericFormat} from "react-number-format";
 
-export class IntEditableTerm extends React.Component<
+export class FloatEditableTerm extends React.Component<
     {
         label: string,
         value: number,
@@ -32,17 +32,14 @@ export class IntEditableTerm extends React.Component<
     }
 
     render() {
-        return(
+        return (
             <NumericFormat
                 label={this.props.label}
                 value={this.state.currentValue}
                 customInput={TextField}
-                onValueChange={(v) => { this.SetValue(v.floatValue)}}
-                onBlur={(e) => { this.CheckAndSave() }}
+                onValueChange={(v) => { this.SetValue(v.floatValue); this.CheckAndSave()}}
                 variant="standard"
-                decimalScale={0}
                 thousandSeparator
-                allowLeadingZeros={false}
                 fullWidth/>
         );
     }

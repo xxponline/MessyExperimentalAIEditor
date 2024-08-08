@@ -84,7 +84,6 @@ export class BtAssetEditorView extends React.Component<IBtAssetEditorRenderProps
                                        dirMenu={this.state.menuDir} position={this.state.position}
                                        editorHelper={this.props.editorHelper}
                 />
-                <BtNodeInspectorViewModel />
             </ReactFlow>
         )
     }

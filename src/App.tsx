@@ -1,10 +1,10 @@
 import {EditorFrameworkView} from "./views/EditorFrameworkView";
-import {EditorFrameworkViewModel} from "./viewmodels/EditorFrameworkViewModel";
+import {BehaviourTreeEditorFramework} from "./viewmodels/BehaviourTreeEditorFramework";
 
 
 function App() {
     return (
-        <EditorFrameworkViewModel/>
+        <BehaviourTreeEditorFramework/>
     );
 }
 export default App;

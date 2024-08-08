@@ -30,8 +30,7 @@ export class StringEditableTerm extends React.Component<
             <TextField id="outlined-basic"
                        label={this.props.label}
                        value={this.state.currentValue}
-                       onChange={(e) => { this.SetValue(e.target.value) }}
-                       onBlur={(e) => { this.CheckAndSave() }}
+                       onChange={(e) => { this.SetValue(e.target.value); this.CheckAndSave(); }}
                        variant="standard"
                        fullWidth/>
         );

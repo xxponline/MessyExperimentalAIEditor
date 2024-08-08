@@ -1,5 +1,5 @@
-import {BtAssetDetail, BtAssetSummary} from "../models/BtLogicDataStructure";
-import {BttNodeMeta} from "../common/BtCommon";
+import {BtAssetDetail, BtAssetSummary} from "./BtLogicDS";
+import {BttNodeMeta} from "./BtCommon";
 
 export type NetMsgType = 'req' | 'ack' | 'ntf';
 

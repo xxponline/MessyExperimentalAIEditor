@@ -1,11 +1,7 @@
 import React from "react";
 import {IBtNodeInspectorViewProps} from "../../viewmodels/BehaviourTree/BtNodeInspectorViewModel";
-import {BooleanEditableTerm} from "../AttributeEditableTerm/BooleanEditableTerm";
-import {EnumEditorTerm} from "../AttributeEditableTerm/EnumEditableTerm";
-import {StringEditableTerm} from "../AttributeEditableTerm/StringEditableTerm";
-import {IntEditableTerm} from "../AttributeEditableTerm/IntEditableTerm";
-import {FloatEditableTerm} from "../AttributeEditableTerm/FloatEditableTerm";
-import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
+import {EnumEditorTerm} from "../CommonComponent/EnumEditableTerm";
+import SettingsEditableTerm from "../CommonComponent/SettingsEditableTerm";
 
 export class BtNodeInspectorView extends React.Component<
     IBtNodeInspectorViewProps,
@@ -19,9 +15,7 @@ export class BtNodeInspectorView extends React.Component<
         if(this.props.NodeType === "bt_task") {
             let viewInfo = this.props.BttViewInfo!;
             return (
-                <div style={{
-                    width: "100%", height: "100%",
-                    backgroundColor: "#ffffffe0", top: "50px", right: "100px", zIndex: 5, padding: "10px",
+                <div style={{ padding: "5px",
                     display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "10px"
                 }}>
                     <div>NodeType: {this.props.NodeType}</div>
@@ -34,17 +28,16 @@ export class BtNodeInspectorView extends React.Component<
                                     }}
                     />
                     {
-                        Object.entries(viewInfo.SettingTerms).map(([key, item]) =>
-                            this.RenderContentItem(key, item, viewInfo.SettingContent[key])
+                        Object.entries(viewInfo.CurrentTypeMetaContent).map(([key, item]) =>
+                            <SettingsEditableTerm key={key} settingsKey={key} meta={item} value={viewInfo.SettingsContent[key]}
+                                                  onValueChange={(value) => this.props.Helper.UpdateSettings(key, value)}/>
                         )
                     }
                 </div>
             );
         } else {
             return (
-                <div style={{
-                    width: "100%", height: "100%",
-                    backgroundColor: "#ffffffe0", top: "50px", right: "100px", zIndex: 5, padding: "10px",
+                <div style={{ padding: "5px",
                     display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "10px"
                 }}>
                     <div>NodeType: {this.props.NodeType}</div>
@@ -53,60 +46,6 @@ export class BtNodeInspectorView extends React.Component<
             );
         }
 
-    }
-
-    private RenderContentItem(key: string, meta: any, value: any) : React.ReactNode {
-        switch (meta.type) {
-            case "String":
-                return (
-                    <StringEditableTerm
-                        key={generateUniqueID()}
-                        label={key} value={value}
-                        onValueChange={(value) => { this.props.Helper.UpdateSettings(key, value) }}
-                    />
-                );
-            case "Int":
-                return (
-                    <IntEditableTerm
-                        key={generateUniqueID()}
-                        value={value} label={key}
-                        onValueChange={(value) => { this.props.Helper.UpdateSettings(key, value) }}
-                    />
-                );
-            case "Float":
-                return (
-                    <FloatEditableTerm
-                        key={generateUniqueID()}
-                        value={value} label={key}
-                        onValueChange={(value) => { this.props.Helper.UpdateSettings(key, value) }}
-                    />
-                );
-            case "Enum":
-               return (
-                   <EnumEditorTerm
-                       key={generateUniqueID()}
-                       label={key}
-                       currentItem={value}
-                       optionalItems={meta.OptionalItems}
-                       onValueChange={(v) => this.props.Helper.UpdateSettings(key, v)}
-                   />
-               );
-            case "Boolean":
-                return (
-                    <BooleanEditableTerm
-                        key={generateUniqueID()}
-                        label={key} value={value}
-                        onValueChange={(v) => this.props.Helper.UpdateSettings(key, v)}
-                    />
-                );
-            // case "BBKey":
-            //     return (
-            //         <div>
-            //             <label>{key}:</label>
-            //             <input type="text"></input>
-            //         </div>
-            //     );
-        }
     }
 }
 
