@@ -5,21 +5,19 @@ export default function CollapsibleSection(props: { title: string, children: Rea
     const [
         isExpanded,
         setIsExpanded
-    ] = React.useState(false);
+    ] = React.useState(true);
 
     const ref= React.useRef<HTMLDivElement>(null);
-    const [height, setHeight] = React.useState(0);
 
     const handleToggle = (e:  React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         e.preventDefault();
         setIsExpanded(!isExpanded);
-        setHeight(ref.current!.clientHeight);
+
     };
 
     const classes = `list-group-item ${
         isExpanded ? "is-expanded" : null
     }`;
-    const currentHeight = isExpanded ? height : 0;
     return (
         <div className={classes}>
             <div className="card-title">
@@ -27,7 +25,7 @@ export default function CollapsibleSection(props: { title: string, children: Rea
             </div>
             <div
                 className="card-collapse"
-                style={{ height: currentHeight + "px" }}
+                style={ isExpanded ? { height: "auto" } : { height: "0px" }}
             >
                 <div className="card-body" ref={ref}>
                     {props.children}

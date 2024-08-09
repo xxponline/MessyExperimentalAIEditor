@@ -19,16 +19,8 @@ export class IntEditableTerm extends React.Component<
     }
 
     private SetValue(value: number | undefined) {
-        if(value !== undefined) {
-            this.setState({currentValue : value});
-        }
-        else {
-            this.setState({currentValue : 0});
-        }
-    }
-
-    private CheckAndSave() {
-        this.props.onValueChange?.(this.state.currentValue);
+        this.setState({currentValue : value ?? 0});
+        this.props.onValueChange?.(value ?? 0);
     }
 
     render() {
@@ -37,7 +29,7 @@ export class IntEditableTerm extends React.Component<
                 label={this.props.label}
                 value={this.state.currentValue}
                 customInput={TextField}
-                onValueChange={(v) => { this.SetValue(v.floatValue); this.CheckAndSave();}}
+                onValueChange={(v) => { this.SetValue(v.floatValue);}}
                 variant="standard"
                 decimalScale={0}
                 thousandSeparator

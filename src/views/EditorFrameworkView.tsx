@@ -5,6 +5,8 @@ import {BtAssetExplorerViewModel} from "../viewmodels/BehaviourTree/BtAssetExplo
 import {BtAssetEditorViewModel} from "../viewmodels/BehaviourTree/BtAssetEditorViewModel";
 import {BtNodeInspectorViewModel} from "../viewmodels/BehaviourTree/BtNodeInspectorViewModel";
 import {BtdInspectorViewModel} from "../viewmodels/BehaviourTree/BtdInspectorViewModel";
+import {Button} from "@mui/material";
+import {BehaviourTreeModel} from "../models/BehaviourTreeModel";
 
 export class EditorFrameworkView extends React.Component<IEditorFrameworkRenderParameters, { } > {
     render() {
@@ -39,6 +41,12 @@ export class EditorFrameworkView extends React.Component<IEditorFrameworkRenderP
                 renderResult = (
                     <div style={{width: "100vw", height: "100vh"}}>
                         <div style={{width: "100%", height: "5vh", backgroundColor: "#ccc"}}>
+                            <Button
+                                onClick={() => {
+                                    BehaviourTreeModel.Instance.RequestSaveCurrentBtDocumentation().
+                                        then((ack)=> {console.log(ack)})
+                                }}
+                            >Save</Button>
                         </div>
                         <div style={{width: "100%", height: "92vh", display: "flex", flexDirection: "row"}}>
                             <div style={{width: "10%"}}>

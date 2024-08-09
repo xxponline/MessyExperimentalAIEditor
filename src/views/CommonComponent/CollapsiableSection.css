@@ -4,7 +4,7 @@
 }
 .list-group-item .card-collapse {
   overflow: hidden;
-  transition: height 0.3s ease-out;
+  transition: max-height 0.3s ease-out;
 }
 .list-group-item h2 {
   margin-top: 5px !important;

@@ -21,16 +21,16 @@ export interface ILogicBtNode {
 
 export interface ILogicBtdData {
     id: string,
-    order: number,
-    btdType: string,
+    Order: number,
+    BtdType: string,
     // Additional members with unknown keys
     [key: string]: any
 }
 
 export interface ILogicBtsData {
     id: string,
-    order: number,
-    btsType: string,
+    Order: number,
+    BtsType: string,
     // Additional members with unknown keys
     [key: string]: any
 }
@@ -52,4 +52,7 @@ export class BtAssetDetail {
     public modifyTimeStamp!: number;
     public btNodes!: Array<ILogicBtNode>;
     public btConnections!: Array<ILogicBtConnection>;
+    public btDescriptors!: {
+        [bttNodeId: string]: Array<ILogicBtdData>
+    }
 }

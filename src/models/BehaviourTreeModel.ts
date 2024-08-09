@@ -4,7 +4,14 @@ import {
     NtfNetMessage,
     ReadBtAssetNtfMessage
 } from "../common/NetMessage";
-import {BtAssetDetail, BtAssetSummary, IBttNodeData, ILogicBtConnection, ILogicBtNode} from "../common/BtLogicDS";
+import {
+    BtAssetDetail,
+    BtAssetSummary,
+    IBttNodeData,
+    ILogicBtConnection,
+    ILogicBtdData,
+    ILogicBtNode
+} from "../common/BtLogicDS";
 import {IAsyncResult} from "./MethodResult";
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
 import {BtdNodeMeta, BtNodeType, BtsNodeMeta, BttNodeMeta} from "../common/BtCommon";
@@ -186,14 +193,19 @@ export class BehaviourTreeModel {
                 if( n.data!.BttType === undefined){
                     n.data!.BttType = "BTT_None";
                     n.data!.Order = 0;
-                    this.FillDefaultNodeContentIfPossible(n);
+                    this.FillDefaultBttNodeContentIfPossible(n);
                 }
             }
         });
 
-        if(this._currentEditingBtAssetContent.btConnections === null) {
+        if(!this._currentEditingBtAssetContent.btConnections) {
             this._currentEditingBtAssetContent.btConnections = [];
         }
+
+        if(!this._currentEditingBtAssetContent.btDescriptors) {
+            this._currentEditingBtAssetContent.btDescriptors = {}
+        }
+
         return true;
     }
 
@@ -304,6 +316,10 @@ export class BehaviourTreeModel {
             this._currentEditingBtAssetContent.btConnections = this._currentEditingBtAssetContent.btConnections
                 .filter((c) => !waitForRemoveConnectionIds.includes(c.id));
 
+            for(let id in nodeIds){
+                delete this._currentEditingBtAssetContent.btDescriptors[id];
+            }
+
             this._btEditorContentListener?.OnRemoveElement(nodeIds, waitForRemoveConnectionIds);
         }
     }
@@ -337,7 +353,7 @@ export class BehaviourTreeModel {
                         let oldBttType = goalNode.data!.BttType;
                         goalNode.data = {...(goalNode.data as IBttNodeData), ...nodeDetailContent}
                         if(goalNode.data.BttType !== oldBttType) {
-                            this.FillDefaultNodeContentIfPossible(goalNode);
+                            this.FillDefaultBttNodeContentIfPossible(goalNode);
                         }
                         break;
                     default:
@@ -347,7 +363,7 @@ export class BehaviourTreeModel {
         }
     }
 
-    private FillDefaultNodeContentIfPossible(node: ILogicBtNode) {
+    private FillDefaultBttNodeContentIfPossible(node: ILogicBtNode) {
         if(node.type === "bt_task") {
             if(node.data!.BttType === undefined) {
                 node.data!.BttType = "BTT_None";
@@ -384,6 +400,73 @@ export class BehaviourTreeModel {
         if( this._currentInspectorFocusId !== nodeId ) {
             this._currentInspectorFocusId = nodeId;
             this._nodeDetailFocusChangedListener.forEach(l => l.OnInspectorFocusChanged(nodeId))
+        }
+    }
+
+    //Descriptor
+    public GetEditingBtAssetDescriptors(nodeId: string) : Array<Readonly<ILogicBtdData>> {
+        if( this._currentEditingBtAssetContent !== null ) {
+            if(this._currentEditingBtAssetContent.btDescriptors[nodeId] === undefined) {
+                return this._currentEditingBtAssetContent.btDescriptors[nodeId] = [];
+            }
+            return this._currentEditingBtAssetContent.btDescriptors[nodeId];
+        }
+        return [];
+    }
+
+    public MoveEditingDescriptor(nodeId: string, fromIndex: number, toIndex: number): void {
+        if( this._currentEditingBtAssetContent !== null ) {
+            let descriptors = this._currentEditingBtAssetContent.btDescriptors[nodeId];
+            let moveItem = descriptors.splice(fromIndex, 1);
+            descriptors.splice(toIndex, 0, ...moveItem);
+            descriptors.forEach((m,idx) => m.Order = idx);
+        }
+    }
+
+    public UpdateDescriptorSettings(nodeId: string, btdId: string, settingsKey: string, settingsValue: any): void {
+        if( this._currentEditingBtAssetContent !== null ) {
+            let descriptors = this._currentEditingBtAssetContent.btDescriptors[nodeId];
+            let Idx = descriptors.findIndex(item => item.id === btdId);
+            if(Idx >= 0)
+            {
+                descriptors[Idx][settingsKey] = settingsValue;
+            }
+        }
+
+    }
+
+    public CreateEditingDescriptor(nodeId: string, btdType: string) : void {
+        if( this._currentEditingBtAssetContent === null ) {
+            return;
+        }
+        let meta = this.GetBTDMetas().find(m => m.BtdType === btdType);
+        if(meta) {
+            let descriptor: ILogicBtdData = {
+                id: generateUniqueID(),
+                Order: 0,
+                BtdType: meta.BtdType
+            }
+            Object.entries(meta.Content).map(([key, item]) => {
+                console.assert(item.default !== undefined);
+                descriptor[key] = item.default;
+            });
+
+            let descriptors = this._currentEditingBtAssetContent.btDescriptors[nodeId];
+            descriptors.push(descriptor);
+            descriptors.forEach((m,idx) => m.Order = idx);
+        }
+    }
+
+    public RemoveEditingDescriptor(nodeId: string, btdId: string) : void {
+        if( this._currentEditingBtAssetContent === null ) {
+            return;
+        }
+        let descriptors = this._currentEditingBtAssetContent.btDescriptors[nodeId];
+        let removeIdx = descriptors.findIndex(m => m.id === btdId);
+        if(removeIdx >= 0)
+        {
+            descriptors.splice(removeIdx, 1);
+            descriptors.forEach((m,idx) => m.Order = idx);
         }
     }
 

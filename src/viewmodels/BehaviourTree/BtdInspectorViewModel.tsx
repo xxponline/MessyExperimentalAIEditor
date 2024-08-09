@@ -15,9 +15,10 @@ export interface IBtdInspectorViewProps {
 }
 
 export interface IBtdInspectorHelper {
-    UpdateBtdSetting(settingItermKey: string, settingValue: any): void;
-    CreateBtdNode(): void;
-
+    UpdateBtdSetting(btdId: string, settingItermKey: string, settingValue: any): void;
+    OnMoveItem(fromIdx: number, toIdx: number): void;
+    CreateBtdNode(btdType: string): void;
+    RemoveBtdNode(btdNodeId: string): void;
 }
 
 
@@ -25,42 +26,29 @@ export class BtdInspectorViewModel
     extends React.Component<any,Pick<IBtdInspectorViewProps, 'InspectNodeId' | 'AttachedBTDs'>>
     implements IInspectorFocusChangedListener, IBtdInspectorHelper
 {
-
-    private data: ILogicBtdData[] = [];
-
     constructor(props: any) {
         super(props);
         this.state = {
             InspectNodeId: null,
             AttachedBTDs: []
         }
-        for (let i = 0, len= 6; i < len; i++) {
-            if(i % 2 == 0)
-            {
-                this.data.push({
-                    id: generateUniqueID(),
-                    btdType: 'BTD_ForceSuccess',
-                    order: i
-                });
-            }
-            else{
-                this.data.push({
-                    id: generateUniqueID(),
-                    btdType: 'BTD_CoolDown',
-                    order: i,
-                    CoolDownTime: 1,
-                    IgnoreTimeScale: false
-                });
-            }
-        }
-
     }
 
-    UpdateBtdSetting(settingItermKey: string, settingValue: any): void {
-        throw new Error("Method not implemented.");
+    UpdateBtdSetting(btdId: string, settingItermKey: string, settingValue: any): void {
+        BehaviourTreeModel.Instance.UpdateDescriptorSettings(this.state.InspectNodeId!, btdId, settingItermKey, settingValue);
     }
-    CreateBtdNode(): void {
-        throw new Error("Method not implemented.");
+    CreateBtdNode(btdType: string): void {
+        BehaviourTreeModel.Instance.CreateEditingDescriptor(this.state.InspectNodeId!, btdType);
+        this.setState({AttachedBTDs: BehaviourTreeModel.Instance.GetEditingBtAssetDescriptors(this.state.InspectNodeId!)});
+    }
+    RemoveBtdNode(btdNodeId: string): void {
+        BehaviourTreeModel.Instance.RemoveEditingDescriptor(this.state.InspectNodeId!,btdNodeId);
+        this.setState({AttachedBTDs: BehaviourTreeModel.Instance.GetEditingBtAssetDescriptors(this.state.InspectNodeId!)});
+    }
+
+    OnMoveItem(fromIdx: number, toIdx: number): void {
+        BehaviourTreeModel.Instance.MoveEditingDescriptor(this.state.InspectNodeId!, fromIdx, toIdx );
+        this.setState({AttachedBTDs: BehaviourTreeModel.Instance.GetEditingBtAssetDescriptors(this.state.InspectNodeId!)});
     }
 
     componentDidMount() {
@@ -72,7 +60,11 @@ export class BtdInspectorViewModel
     }
 
     OnInspectorFocusChanged(nodeId: string | null): void {
-        this.setState({InspectNodeId: nodeId, AttachedBTDs: this.data});
+        this.setState({InspectNodeId: nodeId});
+        if(nodeId !== null)
+        {
+            this.setState({AttachedBTDs: BehaviourTreeModel.Instance.GetEditingBtAssetDescriptors(nodeId)});
+        }
     }
 
     render() {

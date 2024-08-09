@@ -13,8 +13,8 @@ export default class BtsInspectorView extends React.Component<any, any>
         for (let i = 0, len= 6; i < len; i++) {
             data.push({
                 id: generateUniqueID(),
-                btdType: 'BTS_None',
-                order: i
+                BtdType: 'BTS_None',
+                Order: i
             });
         }
 
