@@ -1,6 +1,6 @@
 import {NetManager} from "../service/NetManager";
 import {
-    AckMessageCode, BttNodeMetaNtfMessage, ListBtAssetsNtfMessage,
+    AckMessageCode, BtdNodeMetaNtfMessage, BttNodeMetaNtfMessage, ListBtAssetsNtfMessage,
     NtfNetMessage,
     ReadBtAssetNtfMessage
 } from "../common/NetMessage";
@@ -9,7 +9,7 @@ import {
     BtAssetSummary,
     IBttNodeData,
     ILogicBtConnection,
-    ILogicBtdData,
+    ILogicBtdData, ILogicBtdNode,
     ILogicBtNode
 } from "../common/BtLogicDS";
 import {IAsyncResult} from "./MethodResult";
@@ -203,7 +203,7 @@ export class BehaviourTreeModel {
         }
 
         if(!this._currentEditingBtAssetContent.btDescriptors) {
-            this._currentEditingBtAssetContent.btDescriptors = {}
+            this._currentEditingBtAssetContent.btDescriptors = []
         }
 
         return true;
@@ -404,32 +404,34 @@ export class BehaviourTreeModel {
     }
 
     //Descriptor
-    public GetEditingBtAssetDescriptors(nodeId: string) : Array<Readonly<ILogicBtdData>> {
+    public GetEditingBtAssetDescriptors(nodeId: string) : Array<Readonly<ILogicBtdNode>> {
         if( this._currentEditingBtAssetContent !== null ) {
-            if(this._currentEditingBtAssetContent.btDescriptors[nodeId] === undefined) {
-                return this._currentEditingBtAssetContent.btDescriptors[nodeId] = [];
+            if(this._currentEditingBtAssetContent.btDescriptors === undefined) {
+                this._currentEditingBtAssetContent.btDescriptors = [];
             }
-            return this._currentEditingBtAssetContent.btDescriptors[nodeId];
+            let descriptors = this._currentEditingBtAssetContent.btDescriptors.filter(d => d.attachTo === nodeId);
+            return descriptors;
         }
         return [];
     }
 
     public MoveEditingDescriptor(nodeId: string, fromIndex: number, toIndex: number): void {
         if( this._currentEditingBtAssetContent !== null ) {
-            let descriptors = this._currentEditingBtAssetContent.btDescriptors[nodeId];
+            let descriptors = this._currentEditingBtAssetContent.btDescriptors.filter(d => d.attachTo === nodeId);
+            descriptors.sort((a,b) => a.data.Order - b.data.Order);
             let moveItem = descriptors.splice(fromIndex, 1);
             descriptors.splice(toIndex, 0, ...moveItem);
-            descriptors.forEach((m,idx) => m.Order = idx);
+            descriptors.forEach((m,idx) => m.data.Order = idx);
         }
     }
 
-    public UpdateDescriptorSettings(nodeId: string, btdId: string, settingsKey: string, settingsValue: any): void {
+    public UpdateDescriptorSettings(nodeId: string, btdId: string, settings: { [key: string] : any }): void {
         if( this._currentEditingBtAssetContent !== null ) {
-            let descriptors = this._currentEditingBtAssetContent.btDescriptors[nodeId];
+            let descriptors = this._currentEditingBtAssetContent.btDescriptors.filter(d => d.attachTo === nodeId);
             let Idx = descriptors.findIndex(item => item.id === btdId);
             if(Idx >= 0)
             {
-                descriptors[Idx][settingsKey] = settingsValue;
+                descriptors[Idx].data = {...descriptors[Idx].data, ...settings};
             }
         }
 
@@ -440,33 +442,36 @@ export class BehaviourTreeModel {
             return;
         }
         let meta = this.GetBTDMetas().find(m => m.BtdType === btdType);
+        let existDescriptors = this._currentEditingBtAssetContent.btDescriptors.filter(d => d.attachTo === nodeId);
         if(meta) {
-            let descriptor: ILogicBtdData = {
+            let descriptor: ILogicBtdNode = {
                 id: generateUniqueID(),
-                Order: 0,
-                BtdType: meta.BtdType
+                attachTo: nodeId,
+                data: {
+                    BtdType: meta.BtdType,
+                    Order: existDescriptors.length,
+                }
             }
             Object.entries(meta.Content).map(([key, item]) => {
                 console.assert(item.default !== undefined);
-                descriptor[key] = item.default;
+                descriptor.data[key] = item.default;
             });
-
-            let descriptors = this._currentEditingBtAssetContent.btDescriptors[nodeId];
-            descriptors.push(descriptor);
-            descriptors.forEach((m,idx) => m.Order = idx);
+            this._currentEditingBtAssetContent.btDescriptors.push(descriptor);
         }
     }
 
-    public RemoveEditingDescriptor(nodeId: string, btdId: string) : void {
+    public RemoveEditingDescriptor(btdId: string) : void {
         if( this._currentEditingBtAssetContent === null ) {
             return;
         }
-        let descriptors = this._currentEditingBtAssetContent.btDescriptors[nodeId];
-        let removeIdx = descriptors.findIndex(m => m.id === btdId);
+        let descriptors = this._currentEditingBtAssetContent.btDescriptors;
+        let removeIdx = descriptors.findIndex(d => d.id === btdId);
         if(removeIdx >= 0)
         {
-            descriptors.splice(removeIdx, 1);
-            descriptors.forEach((m,idx) => m.Order = idx);
+            let removedItem = descriptors.splice(removeIdx, 1)[0];
+            let existDescriptors = descriptors.filter(d => d.attachTo === removedItem.attachTo);
+            existDescriptors.sort((a,b) => a.data.Order - b.data.Order);
+            existDescriptors.forEach((m,idx) => m.data.Order = idx);
         }
     }
 
@@ -512,7 +517,10 @@ export class BehaviourTreeModel {
         // return BTTTypes;
     }
 
-
+    private OnNtfBtdMetas(msg: NtfNetMessage) : void {
+        this._btdMetas = (msg as BtdNodeMetaNtfMessage).ntfOpContent
+    }
+    private _btdMetas : BtdNodeMeta[] = [];
     public GetBTDMetas() : BtdNodeMeta[] {
         let BTDTypes: BtdNodeMeta[] = [
             {

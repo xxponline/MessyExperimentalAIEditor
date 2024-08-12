@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDragListView from "react-drag-listview"
-import {ILogicBtdData} from "../../common/BtLogicDS";
 import CollapsibleSection from "../CommonComponent/CollapsibleSection";
 import {IBtdInspectorViewProps} from "../../viewmodels/BehaviourTree/BtdInspectorViewModel";
 import SettingsEditableTerm from "../CommonComponent/SettingsEditableTerm";
 import {Button, IconButton, Menu, MenuItem} from "@mui/material";
 import {Delete} from "@mui/icons-material";
+import {IBtdDisplayNode} from "../../common/BtDisplayDS";
 
 export default class BtdInspectorView extends React.Component<IBtdInspectorViewProps, { anchorEl: HTMLElement | null }>
 {
@@ -52,13 +52,13 @@ export default class BtdInspectorView extends React.Component<IBtdInspectorViewP
         );
     }
 
-    RenderBtdItem(btdItem: ILogicBtdData, index: number): React.ReactNode {
+    RenderBtdItem(btdItem: IBtdDisplayNode, index: number): React.ReactNode {
         let BtdTypeMeta = this.props.BtdMetas.find(m => m.BtdType === btdItem.BtdType);
         if (BtdTypeMeta) {
             return (
                 <div key={index} className="DraggableItem" style={{padding: "10px", border: "1px solid black"}}>
                     <div style={{display: "flex", alignItems: "center"}}>
-                        <div className="DraggableTitle">{btdItem.BtdType}</div>
+                        <div className="DraggableTitle">{btdItem.BtdType} [{btdItem.Order}]</div>
                         <IconButton aria-label="delete" size="small" onClick={() => {this.props.Helper.RemoveBtdNode(btdItem.id)}}>
                             <Delete style={{ color: "red" }} fontSize="small"/>
                         </IconButton>
@@ -67,7 +67,7 @@ export default class BtdInspectorView extends React.Component<IBtdInspectorViewP
                         Object.entries(BtdTypeMeta.Content).map(([key, metaItem]) =>
                             <SettingsEditableTerm key={key} settingsKey={key} meta={metaItem} value={btdItem[key]}
                                                   onValueChange={(value) => {
-                                                      this.props.Helper.UpdateBtdSetting(btdItem.id, key, value)
+                                                      this.props.Helper.UpdateBtdSettings(btdItem.id, key, value)
                                                   }}/>
                         )
                     }

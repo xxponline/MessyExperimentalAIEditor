@@ -1,19 +1,19 @@
 import React from "react";
-import {ILogicBtdData} from "../../common/BtLogicDS";
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
 import CollapsibleSection from "../CommonComponent/CollapsibleSection";
 import ReactDragListView from "react-drag-listview";
+import {IBtsDisplayNode} from "../../common/BtDisplayDS";
 
 export default class BtsInspectorView extends React.Component<any, any>
 {
     constructor(props : any) {
         super(props);
 
-        const data: ILogicBtdData[] = [];
+        const data: IBtsDisplayNode[] = [];
         for (let i = 0, len= 6; i < len; i++) {
             data.push({
                 id: generateUniqueID(),
-                BtdType: 'BTS_None',
+                BtsType: 'BTS_None',
                 Order: i
             });
         }
@@ -40,9 +40,9 @@ export default class BtsInspectorView extends React.Component<any, any>
             <CollapsibleSection title="BT Services">
                 <ReactDragListView {...dragProps}>
                     <ol>
-                        {this.state.data.map((item : ILogicBtdData, index: number) => (
+                        {this.state.data.map((item : IBtsDisplayNode, index: number) => (
                             <li key={index}>
-                                {item.btdType}
+                                {item.BtdType}
                                 <a href="#">Drag</a>
                             </li>
                         ))}
