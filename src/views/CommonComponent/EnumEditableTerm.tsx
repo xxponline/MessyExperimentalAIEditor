@@ -1,7 +1,5 @@
 import React from "react";
 import {FormControl, InputLabel, MenuItem, Select} from "@mui/material";
-import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
-
 
 
 export class EnumEditorTerm extends React.Component<

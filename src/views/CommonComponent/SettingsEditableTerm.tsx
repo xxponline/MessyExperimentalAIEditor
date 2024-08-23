@@ -1,6 +1,5 @@
 import React from "react";
 import {StringEditableTerm} from "./StringEditableTerm";
-import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
 import {IntEditableTerm} from "./IntEditableTerm";
 import {FloatEditableTerm} from "./FloatEditableTerm";
 import {EnumEditorTerm} from "./EnumEditableTerm";
@@ -11,7 +10,7 @@ export default function SettingsEditableTerm(props: {settingsKey: string, meta: 
         case "String":
             return (
                 <StringEditableTerm
-                    label={props.settingsKey} value={props.value}
+                    value={props.value} label={props.settingsKey}
                     onValueChange = {(value) => props.onValueChange(value)}
                 />
             );
@@ -30,6 +29,7 @@ export default function SettingsEditableTerm(props: {settingsKey: string, meta: 
                 />
             );
         case "Enum":
+            //console.log(props);
             return (
                 <EnumEditorTerm
                     label = {props.settingsKey}

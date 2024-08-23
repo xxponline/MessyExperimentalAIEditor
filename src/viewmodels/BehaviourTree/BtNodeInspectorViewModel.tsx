@@ -97,20 +97,20 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
             return;
         }
 
-        let bttData : IBttNodeData = node.data as IBttNodeData;
-
-        if(bttData.BttType === newBttType) {
+        if(node.data!.BttType === newBttType) {
             return;
         }
+
+        BehaviourTreeModel.Instance.UpdateNodeDetailInEditingDocument(this.state.InspectNodeId!, {
+            BttType: newBttType,
+        });
 
         let types = BehaviourTreeModel.Instance.GetBTTMetas();
         let currentType = types.find(
             (t) => t.BttType === newBttType
         );
 
-        BehaviourTreeModel.Instance.UpdateNodeDetailInEditingDocument(this.state.InspectNodeId!, {
-            BttType: newBttType,
-        });
+        let refreshedNode = BehaviourTreeModel.Instance.GetEditingBtAssetContentNodes().find((m) => m.id === currentNodeId);
 
         if(currentType) {
             this.setState({
@@ -118,7 +118,7 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
                     ValidTypes: types.map((t) => t.BttType),
                     CurrentType: newBttType,
                     CurrentTypeMetaContent: currentType.Content,
-                    SettingsContent: bttData
+                    SettingsContent: refreshedNode!.data!
                 }
             });
         }

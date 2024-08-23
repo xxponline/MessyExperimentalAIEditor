@@ -17,6 +17,17 @@ export class StringEditableTerm extends React.Component<
         }
     }
 
+    componentDidUpdate(prevProps: Readonly<{
+        label: string;
+        value: string;
+        onValueChange?: (value: string) => void
+    }>, prevState: Readonly<{ currentValue: string }>, snapshot?: any) {
+        if(prevProps.value !== this.props.value)
+        {
+            this.setState({currentValue: this.props.value});
+        }
+    }
+
     private SetValue(value: string) {
         this.setState({currentValue: value});
         this.props.onValueChange?.(value);

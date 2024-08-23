@@ -9,7 +9,7 @@ import {
     BtAssetSummary,
     IBttNodeData,
     ILogicBtConnection,
-    ILogicBtdData, ILogicBtdNode,
+    ILogicBtdNode,
     ILogicBtNode
 } from "../common/BtLogicDS";
 import {IAsyncResult} from "./MethodResult";
@@ -189,7 +189,7 @@ export class BehaviourTreeModel {
         }
 
         this._currentEditingBtAssetContent.btNodes.forEach((n) => {
-            if(n.type == "bt_task") {
+            if(n.type === "bt_task") {
                 if( n.data!.BttType === undefined){
                     n.data!.BttType = "BTT_None";
                     n.data!.Order = 0;
@@ -231,7 +231,7 @@ export class BehaviourTreeModel {
                 .btConnections.find(c => c.target === node.id);
             if(connectionFromParent) {
                 let result = this._currentEditingBtAssetContent.btNodes
-                    .find(n => n.id == connectionFromParent!.source);
+                    .find(n => n.id === connectionFromParent!.source);
                 if(result !== undefined) {
                     return result;
                 }
@@ -311,7 +311,7 @@ export class BehaviourTreeModel {
 
             let waitForRemoveConnectionIds : Array<string> = this._currentEditingBtAssetContent.btConnections
                 .filter((c) => nodeIds.includes(c.source) || nodeIds.includes(c.target)).map(c => c.id);
-            console.log(waitForRemoveConnectionIds);
+            //console.log(waitForRemoveConnectionIds);
 
             this._currentEditingBtAssetContent.btConnections = this._currentEditingBtAssetContent.btConnections
                 .filter((c) => !waitForRemoveConnectionIds.includes(c.id));
@@ -369,13 +369,12 @@ export class BehaviourTreeModel {
                 node.data!.BttType = "BTT_None";
             }
             let types = BehaviourTreeModel.Instance.GetBTTMetas();
-            let currentType = types.find(
+            let currentTypeMeta = types.find(
                 (t) => t.BttType === node.data!.BttType
             );
-
-            Object.entries(currentType!.Content).map(([key, item]) => {
+            Object.entries(currentTypeMeta!.Content).map(([key, item]) => {
                 if(node.data![key] === undefined) {
-                    if(item.default) {
+                    if(item.default !== undefined) {
                         node.data![key] = item.default;
                     }
                 }
@@ -485,6 +484,7 @@ export class BehaviourTreeModel {
     }
     private _bttNodeMeta : BttNodeMeta[] = [];
     public GetBTTMetas() : BttNodeMeta[] {
+        //console.log(this._bttNodeMeta);
         return this._bttNodeMeta;
         // let BTTTypes: BttNodeMeta[] = [
         //     {
