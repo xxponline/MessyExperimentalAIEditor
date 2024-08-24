@@ -78,7 +78,11 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
                 id: n.id,
                 type: n.type,
                 position: n.position,
-                data: n.data,
+                data: {
+                    ...n.data!,
+                    descriptors: [],
+                    services: []
+                },
             }
         });
         this.setState((preState) => (
@@ -113,18 +117,25 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
         let [logicNodes, logicConnections] = BehaviourTreeModel.Instance.GetEditingBtAssetContent();
         // console.log(logicNodes);
         let displayNodes = logicNodes.map<BtDisplayNode>((n) => {
+            let logicDescriptors = BehaviourTreeModel.Instance.GetEditingBtAssetDescriptors(n.id);
+
             return {
                 id: n.id,
                 type: n.type,
                 position: n.position,
-                data: n.data,
+                data: {
+                    ...n.data!,
+                    descriptors: logicDescriptors.map(d => {return { Order: d.data.Order, BtdType: d.data.BtdType}} ),
+                    services: []
+                }
+
             }
         });
         let displayConnections = logicConnections.map<BtDisplayEdge>((c) => {
             return {
                 id: c.id,
                 source: c.source,
-                target: c.target,
+                target: c.target
             }
         });
 
