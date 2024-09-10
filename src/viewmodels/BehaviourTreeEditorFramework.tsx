@@ -1,7 +1,6 @@
 import React from "react";
-import {NetManager, NetStateEnum} from "../service/NetManager";
+import {NetStateEnum} from "../service/NetManager";
 import {EditorFrameworkView} from "../views/EditorFrameworkView";
-import {BehaviourTreeModel} from "../models/BehaviourTreeModel";
 
 export interface IEditorFrameworkViewModelState {
     NetState: NetStateEnum;
@@ -26,30 +25,33 @@ export class BehaviourTreeEditorFramework extends
     React.Component<{}, IEditorFrameworkViewModelState>
     implements INetStateListener, IEditorFrameworkHelper
 {
-    state: IEditorFrameworkViewModelState = {
-        NetState: NetStateEnum.StateOffline,
-        ErrorInfo: null
+    constructor(props:any) {
+        super(props);
+        this.state = {
+            NetState: NetStateEnum.StateOffline,
+            ErrorInfo: null
+        }
     }
 
     OnNetStateChange(netState: NetStateEnum, errInfo : string | null) {
-        this.setState({NetState: netState, ErrorInfo: errInfo});
+        //this.setState({NetState: netState, ErrorInfo: errInfo});
     }
 
     componentDidMount() {
-        NetManager.Instance.Init();
-        NetManager.Instance.RegisterNetStateListener(this);
-        BehaviourTreeModel.Instance.Init();
+        //NetManager.Instance.Init();
+        //NetManager.Instance.RegisterNetStateListener(this);
+        //BehaviourTreeModel.Instance.Init();
     }
 
     componentWillUnmount() {
-        NetManager.Instance.RemoveNetStateListener();
+        //NetManager.Instance.RemoveNetStateListener();
     }
 
     ConnectToProject(address: string): void {
-        NetManager.Instance.ConnectToProject(address);
+        //NetManager.Instance.ConnectToProject(address);
     }
 
     render() {
-        return (<EditorFrameworkView netState={this.state.NetState} netErrorInfo={this.state.ErrorInfo} vmHelper={this} />)
+        return (<EditorFrameworkView netState={NetStateEnum.StateConnected} netErrorInfo={this.state.ErrorInfo} vmHelper={this} />)
     }
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import "./BtAssetEditorMenu.css"
-import {IBtAssetEditorHelper} from "../../viewmodels/BehaviourTree/BtAssetEditorViewModel";
 import {EditorPosition} from "../../common/EditorCommon";
+import {BtNodeType} from "../../common/BtCommon";
 
 export type MenuLocalInfo = { left?: number, right?: number, top?: number, bottom?: number }
 
@@ -20,12 +20,26 @@ export enum MenuDirection
     LeftUp
 }
 
+export interface IBtAssetEditorMenuHelper {
+    CreateNode(type: BtNodeType, pos: EditorPosition): void;
+
+    RemoveNodes(): void;
+    //
+    // LinkNode(source: string, target: string): void;
+    //
+    // Duplicate(nodeIds: string[]): void;
+    //
+    // Copy(nodeIds: string[]): void;
+    //
+    // Paste(pos: EditorPosition): void;
+}
+
 export interface IBtAssetEditorEnumProps {
     contextMenu: EditorContextMenuEnum;
     dirMenu: MenuDirection;
     position: EditorPosition;
 
-    editorHelper: IBtAssetEditorHelper;
+    editorHelper: IBtAssetEditorMenuHelper;
 }
 
 export class BtAssetEditorMenuView
@@ -80,7 +94,7 @@ export class BtAssetEditorMenuView
                         <p style={{margin: '0.5em'}}>
                             <small>edge: 1111</small>
                         </p>
-                        <button onClick={() => {}}>delete</button>
+                        <button onClick={() => {}}>Unlink</button>
                     </div>
                 );
             case EditorContextMenuEnum.Node:
@@ -93,7 +107,7 @@ export class BtAssetEditorMenuView
                             {/*<small>node: {this.props.toolUtils.SelectedNodes![0].id}</small>*/}
                         </p>
                         {/*<button onClick={ () => { this.props.editorHelper.RemoveNode() } }>duplicate</button>*/}
-                        <button onClick={()=>{}}>delete</button>
+                        <button onClick={()=>{this.props.editorHelper.RemoveNodes()}}>Delete</button>
                     </div>
                 );
             default:

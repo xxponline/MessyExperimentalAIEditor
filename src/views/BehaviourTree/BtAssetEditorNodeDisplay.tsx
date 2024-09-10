@@ -29,7 +29,7 @@ export function BTSelectorNode(nodeProps: NodeProps) {
         <div className={"selector-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
             {RenderDescriptor(nodeProps)}
-            <div>BTC Type: Selector</div>
+            <div>BTC: Selector</div>
             <Handle type="source" position={Position.Bottom}/>
         </div>
     );
@@ -40,7 +40,7 @@ export function BTSequenceNode(nodeProps: NodeProps) {
         <div className={"sequence-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
             {RenderDescriptor(nodeProps)}
-            <div>BTC Type: Sequence</div>
+            <div>BTC: Sequence</div>
             <Handle type="source" position={Position.Bottom}/>
         </div>
     );
@@ -50,7 +50,7 @@ export function BTSimpleParallelNode(nodeProps: NodeProps<BtDisplayNodeData>) {
     return (
         <div className={"sequence-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
-            <div>BTC Type: SimpleParallel</div>
+            <div>BTC: SimpleParallel</div>
             <Handle type="source" position={Position.Bottom}/>
             <Handle type="source" position={Position.Bottom}/>
         </div>
@@ -62,7 +62,7 @@ export function BTTaskNode(nodeProps: NodeProps<BtDisplayNodeData>) {
         <div className={"task-node"} style={getCss(nodeProps)}>
             <Handle type="target" position={Position.Top}/>
             {RenderDescriptor(nodeProps)}
-            <div>BTT Type: [{nodeProps.data.BttType}] [{nodeProps.data.Order}]</div>
+            <div>BTT: [{nodeProps.data.taskType}] [{nodeProps.data.order}]</div>
         </div>
     );
 }
@@ -71,9 +71,10 @@ function RenderDescriptor(nodeProps: NodeProps<BtDisplayNodeData>) : React.React
 {
     if(nodeProps.data.descriptors.length > 0) {
         return(
-            nodeProps.data.descriptors.map(d =>
-                <div style={{ color: "blue", border: "1px solid blue", margin: "5px 0px", padding: "2px" }}>{d.BtdType} [{d.Order}]</div>
-            )
+            null
+            // nodeProps.data.descriptors.map(d =>
+            //     <div style={{ color: "blue", border: "1px solid blue", margin: "5px 0px", padding: "2px" }}>{d.BtdType} [{d.Order}]</div>
+            // )
         );
     }
     else {

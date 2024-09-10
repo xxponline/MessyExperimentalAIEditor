@@ -1,4 +1,4 @@
-import {BtAssetDetail, BtAssetSummary, ILogicBtdData} from "./BtLogicDS";
+// import {BtAssetDetail, BtAssetSummary, ILogicBtdData} from "./BtLogicDS";
 import {BtdNodeMeta, BttNodeMeta} from "./BtCommon";
 
 export type NetMsgType = 'req' | 'ack' | 'ntf';
@@ -34,13 +34,13 @@ export class NtfNetMessage extends BaseNetMessage {
 export class ListBtAssetsNtfMessage extends NtfNetMessage {
     msgType: 'ntf' = 'ntf';
     ntfOperation!: string;
-    ntfOpContent!: BtAssetSummary[];
+    // ntfOpContent!: BtAssetSummary[];
 }
 
 export class ReadBtAssetNtfMessage extends NtfNetMessage {
     msgType: 'ntf' = 'ntf';
     ntfOperation!: string;
-    ntfOpContent!: BtAssetDetail
+    // ntfOpContent!: BtAssetDetail
 }
 
 export class BttNodeMetaNtfMessage extends NtfNetMessage {

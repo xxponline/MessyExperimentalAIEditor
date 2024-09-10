@@ -18,6 +18,7 @@ export class BtNodeInspectorView extends React.Component<
                 <div style={{ padding: "5px",
                     display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "10px"
                 }}>
+                    <div>DocVersion: {this.props.DocVersion}</div>
                     <div>NodeType: {this.props.NodeType}</div>
                     <div>NodeId: {this.props.InspectNodeId}</div>
                     <EnumEditorTerm label="TaskType" key="TaskTypeKey"
@@ -40,6 +41,7 @@ export class BtNodeInspectorView extends React.Component<
                 <div style={{ padding: "5px",
                     display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "10px"
                 }}>
+                    <div>DocVersion: {this.props.DocVersion}</div>
                     <div>NodeType: {this.props.NodeType}</div>
                     <div>NodeId: {this.props.InspectNodeId}</div>
                 </div>

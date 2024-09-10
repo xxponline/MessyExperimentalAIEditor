@@ -1,48 +1,27 @@
 import {BtNodeType} from "../common/BtCommon";
 
-export interface IBttNodeData {
-    BttType: string,
-    Order: number,
-    // Additional members with unknown keys
-    [key: string]: any
-}
-
-export interface IBtcNodeData {
-    Order: number,
+export interface IBtSettings {
     [key: string]: any
 }
 
 export interface ILogicBtNode {
     id: string,
+    order: number,
     position: { x: number, y: number },
     type: BtNodeType,
-    data: IBttNodeData | IBtcNodeData | null
+    data: IBtSettings | null
 }
 
-export interface ILogicBtdNode {
+export interface ILogicBtDescriptor {
     id: string,
     attachTo: string,
-    data: ILogicBtdData;
+    data: IBtSettings;
 }
 
-export interface ILogicBtdData {
-    Order: number,
-    BtdType: string,
-    // Additional members with unknown keys
-    [key: string]: any
-}
-
-export interface ILogicBtsNode {
+export interface ILogicBtService {
     id: string,
     attachTo: string,
-    data: ILogicBtsData
-}
-
-export interface ILogicBtsData {
-    Order: number,
-    BtsType: string,
-    // Additional members with unknown keys
-    [key: string]: any
+    data: IBtSettings
 }
 
 export interface ILogicBtConnection {
@@ -51,16 +30,16 @@ export interface ILogicBtConnection {
     target: string,
 }
 
-export class BtAssetSummary {
-    public assetPath!: string;
-    public assetGuid!: string;
+export interface IBtAssetDocument {
+    ModifyTimeStamp: number;
+    Nodes: Array<ILogicBtNode>;
+    Connections: Array<ILogicBtConnection>;
+    Services: Array<ILogicBtService>;
+    Descriptors: Array<ILogicBtDescriptor>;
 }
 
-export class BtAssetDetail {
-    public assetPath!: string;
-    public assetGuid!: string;
-    public modifyTimeStamp!: number;
-    public btNodes!: Array<ILogicBtNode>;
-    public btConnections!: Array<ILogicBtConnection>;
-    public btDescriptors!: Array<ILogicBtdNode>;
-}
+//Need To Removed
+export type IBtcNodeData = any
+export type IBttNodeData = any
+export type ILogicBtdData = any
+export type ILogicBtsData = any

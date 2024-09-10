@@ -1,8 +1,7 @@
 import React from "react";
 import {BtNodeInspectorView} from "../../views/BehaviourTree/BtNodeInspectorView";
 import {BehaviourTreeModel, IInspectorFocusChangedListener} from "../../models/BehaviourTreeModel";
-import {BtNodeType, IMetaContentItem} from "../../common/BtCommon";
-import {IBttNodeData} from "../../common/BtLogicDS";
+import {IMetaContentItem} from "../../common/BtCommon";
 
 export interface IBtNodeInspectorViewProps {
     BttViewInfo: {
@@ -12,8 +11,9 @@ export interface IBtNodeInspectorViewProps {
         SettingsContent: { [key: string] : any };
     } | null
 
-    NodeType : BtNodeType
+    NodeType : string
     InspectNodeId: string | null;
+    DocVersion: string
 
     Helper: IBtNodeInspectorHelper
 }
@@ -35,6 +35,7 @@ export class BtNodeInspectorViewModel extends React.Component<{},IBtNodeInspecto
             BttViewInfo: null,
             NodeType : "bt_selector",
             InspectNodeId: null,
+            DocVersion: "",
 
             Helper: this
         }

@@ -1,7 +1,7 @@
 import React from "react";
 import BtdInspectorView from "../../views/BehaviourTree/BtdInspectorView";
 import {BehaviourTreeModel, IInspectorFocusChangedListener} from "../../models/BehaviourTreeModel";
-import {ILogicBtdNode} from "../../common/BtLogicDS";
+import {ILogicBtDescriptor} from "../../common/BtLogicDS";
 import {BtdNodeMeta} from "../../common/BtCommon";
 import {IBtdDisplayNode} from "../../common/BtDisplayDS";
 
@@ -33,7 +33,7 @@ export class BtdInspectorViewModel
         }
     }
 
-    private BtdLogicTransformToBtdDisplay(logics: ILogicBtdNode[]) : IBtdDisplayNode[]
+    private BtdLogicTransformToBtdDisplay(logics: ILogicBtDescriptor[]) : IBtdDisplayNode[]
     {
         let displayNodes = logics.map(n => {
             return {
@@ -41,7 +41,7 @@ export class BtdInspectorViewModel
                 ...n.data
             }
         });
-        displayNodes.sort((a,b) => a.Order - b.Order);
+        //displayNodes.sort((a,b) => a.Order - b.Order);
         return displayNodes;
     }
 

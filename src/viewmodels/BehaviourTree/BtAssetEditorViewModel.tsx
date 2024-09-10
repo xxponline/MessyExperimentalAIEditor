@@ -1,5 +1,4 @@
 import React from "react";
-import {BtAssetEditorView} from "../../views/BehaviourTree/BtAssetEditorView";
 import {EdgeChange, NodeChange, NodePositionChange, NodeRemoveChange} from "reactflow";
 import {NodeSelectionChange} from "@reactflow/core/dist/esm/types/changes";
 import {BehaviourTreeModel, IBtContentChangedListener} from "../../models/BehaviourTreeModel";
@@ -14,19 +13,19 @@ interface IBtEditorClassState {
     Edges: BtDisplayEdge[];
 }
 
-export interface IBtAssetEditorHelper {
-    CreateNode(type: BtNodeType, pos: EditorPosition): void;
-
-    RemoveNode(nodeIds: string[]): void;
-
-    LinkNode(source: string, target: string): void;
-
-    Duplicate(nodeIds: string[]): void;
-
-    Copy(nodeIds: string[]): void;
-
-    Paste(pos: EditorPosition): void;
-}
+// export interface IBtAssetEditorHelper {
+//     CreateNode(type: BtNodeType, pos: EditorPosition): void;
+//
+//     RemoveNode(nodeIds: string[]): void;
+//
+//     LinkNode(source: string, target: string): void;
+//
+//     Duplicate(nodeIds: string[]): void;
+//
+//     Copy(nodeIds: string[]): void;
+//
+//     Paste(pos: EditorPosition): void;
+// }
 
 export interface IBtAssetEditorRenderProps {
     Nodes: BtDisplayNode[];
@@ -36,11 +35,13 @@ export interface IBtAssetEditorRenderProps {
     onEdgesChange: (changes: EdgeChange[]) => void;
     onConnect: (connection: Connection) => void;
 
-    editorHelper: IBtAssetEditorHelper;
+    //editorHelper: IBtAssetEditorHelper;
 }
 
 export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassState>
-    implements IBtContentChangedListener, IBtAssetEditorHelper {
+    implements IBtContentChangedListener
+//        ,IBtAssetEditorHelper
+{
     constructor(props: React.ComponentProps<any>) {
         super(props);
         this.state = {
@@ -73,21 +74,21 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
 
     //Content Change Listener
     OnCreateNewNode(nodes: Readonly<ILogicBtNode>[]): void {
-        let newDisplayNodes = nodes.map<BtDisplayNode>((n) => {
-            return {
-                id: n.id,
-                type: n.type,
-                position: n.position,
-                data: {
-                    ...n.data!,
-                    descriptors: [],
-                    services: []
-                },
-            }
-        });
-        this.setState((preState) => (
-            { Nodes: preState.Nodes.concat(newDisplayNodes) }
-        ));
+        // let newDisplayNodes = nodes.map<BtDisplayNode>((n) => {
+        //     return {
+        //         id: n.id,
+        //         type: n.type,
+        //         position: n.position,
+        //         data: {
+        //             ...n.data!,
+        //             descriptors: [],
+        //             services: []
+        //         },
+        //     }
+        // });
+        // this.setState((preState) => (
+        //     { Nodes: preState.Nodes.concat(newDisplayNodes) }
+        // ));
     }
 
     OnNodeLinked(connections: Readonly<ILogicBtConnection>[]): void {
@@ -114,32 +115,32 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
     }
 
     OnCurrentEditingBtDocumentChanged(): void {
-        let [logicNodes, logicConnections] = BehaviourTreeModel.Instance.GetEditingBtAssetContent();
+        // let [logicNodes, logicConnections] = BehaviourTreeModel.Instance.GetEditingBtAssetContent();
         // console.log(logicNodes);
-        let displayNodes = logicNodes.map<BtDisplayNode>((n) => {
-            let logicDescriptors = BehaviourTreeModel.Instance.GetEditingBtAssetDescriptors(n.id);
-
-            return {
-                id: n.id,
-                type: n.type,
-                position: n.position,
-                data: {
-                    ...n.data!,
-                    descriptors: logicDescriptors.map(d => {return { Order: d.data.Order, BtdType: d.data.BtdType}} ),
-                    services: []
-                }
-
-            }
-        });
-        let displayConnections = logicConnections.map<BtDisplayEdge>((c) => {
-            return {
-                id: c.id,
-                source: c.source,
-                target: c.target
-            }
-        });
-
-        this.setState({ Nodes: displayNodes, Edges: displayConnections});
+        // let displayNodes = logicNodes.map<BtDisplayNode>((n) => {
+        //     let logicDescriptors = BehaviourTreeModel.Instance.GetEditingBtAssetDescriptors(n.id);
+        //
+        //     return {
+        //         id: n.id,
+        //         type: n.type,
+        //         position: n.position,
+        //         data: {
+        //             ...n.data!,
+        //             descriptors: logicDescriptors.map(d => {return { Order: d.data.Order, BtdType: d.data.BtdType}} ),
+        //             services: []
+        //         }
+        //
+        //     }
+        // });
+        // let displayConnections = logicConnections.map<BtDisplayEdge>((c) => {
+        //     return {
+        //         id: c.id,
+        //         source: c.source,
+        //         target: c.target
+        //     }
+        // });
+        //
+        // this.setState({ Nodes: displayNodes, Edges: displayConnections});
     }
     //End Content Change Listener
 
@@ -252,19 +253,19 @@ export class BtAssetEditorViewModel extends React.Component<{}, IBtEditorClassSt
     }
 
     render() {
-        let renderProps: IBtAssetEditorRenderProps = {
-            Nodes: this.state.Nodes,
-            Edges: this.state.Edges,
-
-            editorHelper: this,
-
-            onNodesChange: (changes : NodeChange[]) => this.onNodesChange(changes),
-            onEdgesChange: (changes : EdgeChange[]) => this.onEdgesChange(changes),
-            onConnect: (connection: Connection) => this.onConnect(connection)
-        }
+        // let renderProps: IBtAssetEditorRenderProps = {
+        //     Nodes: this.state.Nodes,
+        //     Edges: this.state.Edges,
+        //
+        //     editorHelper: this,
+        //
+        //     onNodesChange: (changes : NodeChange[]) => this.onNodesChange(changes),
+        //     onEdgesChange: (changes : EdgeChange[]) => this.onEdgesChange(changes),
+        //     onConnect: (connection: Connection) => this.onConnect(connection)
+        // }
         return (
             <div style={{width: "100%", height: "100%"}}>
-                <BtAssetEditorView {...renderProps} />
+                {/*<BtAssetEditorView {...renderProps} />*/}
             </div>
 
             // <div>
