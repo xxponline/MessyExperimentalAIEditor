@@ -18,7 +18,12 @@ import {
     MenuDirection
 } from "./BtAssetEditorMenuView";
 import {BtDisplayEdge, BtDisplayNode, BtDisplayNodeData, IAssetSummaryForTab} from "../../common/BtDisplayDS";
-import {CreateBehaviourTreeNodeAPI, ReadAssetAPI, RemoveBehaviourTreeNodeAPI} from "../../common/ServerAPI";
+import {
+    CreateBehaviourTreeNodeAPI,
+    MoveBehaviourTreeNodeAPI,
+    ReadAssetAPI,
+    RemoveBehaviourTreeNodeAPI
+} from "../../common/ServerAPI";
 import {
     BehaviourTreeModifiedNodeDiffInfo,
     CreateBehaviourTreeNodeResponse,
@@ -382,7 +387,7 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
         )
     }
 
-    const RequestRemoveSelectedBehaviourTreeNode = () => {
+    const RequestRemoveSelectedBehaviourTreeNodes = () => {
         let selectedNodeIds = displayNodes.filter(m => m.selected).map(m => m.id);
         if(selectedNodeIds.length > 0) {
             fetch(RemoveBehaviourTreeNodeAPI, {
@@ -409,10 +414,59 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
 
     const menuHelper: IBtAssetEditorMenuHelper = {
         CreateNode: RequestCreateBehaviourTreeNode,
-        RemoveNodes: RequestRemoveSelectedBehaviourTreeNode,
+        RemoveNodes: RequestRemoveSelectedBehaviourTreeNodes,
     }
 
     //End Menu Helper
+
+    //Node Change Methods
+
+    const OnCustomNodesChange = (changes: NodeChange[]) => {
+        changes = changes.filter(m => m.type !== 'remove'); //filter remove todo we can consider integrate our remove logic here?
+
+        {
+            //pass node movement
+            let movementChanges = changes.filter(m => m.type === 'position')
+                .map(m => m as NodePositionChange)
+                .filter(m => !m.dragging);
+            if(movementChanges.length > 0) {
+                let movedNodes =  displayNodes.filter(m => movementChanges.map(m => m.id).includes(m.id))
+                RequestMoveBehaviourTreeNodes(movedNodes.map( m=> { return {
+                    nodeId: m.id,
+                    toPosition: m.position
+                }}))
+            }
+
+        }
+
+        onNodesChange(changes)
+    }
+
+    const RequestMoveBehaviourTreeNodes = (movementInfos: Array<{ nodeId: string, toPosition: { x: number, y: number } }>) => {
+        if(movementInfos.length > 0){
+            fetch(MoveBehaviourTreeNodeAPI, {
+                method: 'POST',
+                body: JSON.stringify(
+                    {
+                        assetId: props.assetId,
+                        currentVersion: assetVersion,
+                        movements: movementInfos,
+                    }
+                )
+            }).then(
+                res => res.json()
+            ).then(
+                (res: CreateBehaviourTreeNodeResponse) => {
+                    if(res.errCode === 0) {
+                        //The display refreshing is not necessary in movement response
+                        SetAssetVersion(res.modificationInfo.newVersion);
+                    }
+                }
+            )
+        }
+    }
+
+    //End Node Change Methods
 
     const GetSelectedNodeInfo = (): [string, string] => {
         let selectedDisplayNodes = displayNodes.filter(m => m.selected);
@@ -449,7 +503,7 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
                     ref={elementRef}
                     nodes={displayNodes}
                     edges={edges}
-                    onNodesChange={onNodesChange}
+                    onNodesChange={OnCustomNodesChange}
                     onEdgesChange={onEdgesChange}
                     onNodeContextMenu={(e) => OnInvokeContextMenu(e, EditorContextMenuEnum.Node)}
                     onPaneContextMenu={(e) => OnInvokeContextMenu(e, EditorContextMenuEnum.Pane)}
