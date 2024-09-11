@@ -53,4 +53,5 @@ export type CreateBehaviourTreeNodeResponse = ServerCommonResponse & { modificat
 export type MoveBehaviourTreeNodeResponse = ServerCommonResponse & { modificationInfo: BehaviourTreeNodeModificationInfo }
 export type UpdateBehaviourTreeNodeResponse = ServerCommonResponse & { modificationInfo: BehaviourTreeNodeModificationInfo }
 export type RemoveBehaviourTreeNodeResponse = ServerCommonResponse & { modificationInfo: BehaviourTreeNodeModificationInfo }
+export type ConnectBehaviourTreeNodeResponse = ServerCommonResponse & { modificationInfo: BehaviourTreeNodeModificationInfo }
 

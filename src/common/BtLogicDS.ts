@@ -7,6 +7,7 @@ export interface IBtSettings {
 export interface ILogicBtNode {
     id: string,
     order: number,
+    parentId: string,
     position: { x: number, y: number },
     type: BtNodeType,
     data: IBtSettings | null

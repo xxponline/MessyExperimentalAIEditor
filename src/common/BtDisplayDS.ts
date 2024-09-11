@@ -3,7 +3,7 @@ import {Node} from "reactflow";
 import {IBtcNodeData, IBttNodeData, ILogicBtdData, ILogicBtsData} from "./BtLogicDS";
 
 export type BtDisplayEdge = Edge;
-export type BtDisplayNodeData = { taskType: string, order: number, descriptors: IBtdDisplaySummary[], services: IBtsDisplaySummary[]};
+export type BtDisplayNodeData = { taskType: string, order: number, descriptors: IBtdDisplaySummary[], services: IBtsDisplaySummary[], behaviourTreeParentId: string};
 export type BtDisplayNode = Node<BtDisplayNodeData, string>;
 
 export type IBtdDisplayNode = ILogicBtdData & { id: string }

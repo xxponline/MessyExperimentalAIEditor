@@ -18,8 +18,8 @@ function getCss(nodeProps: NodeProps): React.CSSProperties {
 export function BTRootNode(nodeProps: NodeProps) {
     return (
         <div className={"root-node"} style={getCss(nodeProps)}>
-            <div>Root</div>
-            <Handle type="source" position={Position.Bottom}/>
+            <div>Root [{nodeProps.data.order}]</div>
+            <Handle id="source" type="source" position={Position.Bottom}/>
         </div>
     );
 }
@@ -27,10 +27,10 @@ export function BTRootNode(nodeProps: NodeProps) {
 export function BTSelectorNode(nodeProps: NodeProps) {
     return (
         <div className={"selector-node"} style={getCss(nodeProps)}>
-            <Handle type="target" position={Position.Top}/>
+            <Handle id="target" type="target" position={Position.Top}/>
             {RenderDescriptor(nodeProps)}
-            <div>BTC: Selector</div>
-            <Handle type="source" position={Position.Bottom}/>
+            <div>BTC: Selector [{nodeProps.data.order}]</div>
+            <Handle id="source" type="source" position={Position.Bottom}/>
         </div>
     );
 }
@@ -38,29 +38,30 @@ export function BTSelectorNode(nodeProps: NodeProps) {
 export function BTSequenceNode(nodeProps: NodeProps) {
     return (
         <div className={"sequence-node"} style={getCss(nodeProps)}>
-            <Handle type="target" position={Position.Top}/>
+            <Handle id="target" type="target" position={Position.Top}/>
             {RenderDescriptor(nodeProps)}
-            <div>BTC: Sequence</div>
-            <Handle type="source" position={Position.Bottom}/>
+            <div>BTC: Sequence [{nodeProps.data.order}]</div>
+            <Handle id="source" type="source" position={Position.Bottom}/>
         </div>
     );
 }
 
-export function BTSimpleParallelNode(nodeProps: NodeProps<BtDisplayNodeData>) {
-    return (
-        <div className={"sequence-node"} style={getCss(nodeProps)}>
-            <Handle type="target" position={Position.Top}/>
-            <div>BTC: SimpleParallel</div>
-            <Handle type="source" position={Position.Bottom}/>
-            <Handle type="source" position={Position.Bottom}/>
-        </div>
-    );
-}
+// may be we need it in future
+// export function BTSimpleParallelNode(nodeProps: NodeProps<BtDisplayNodeData>) {
+//     return (
+//         <div className={"sequence-node"} style={getCss(nodeProps)}>
+//             <Handle type="target" position={Position.Top}/>
+//             <div>BTC: SimpleParallel</div>
+//             <Handle type="source" position={Position.Bottom}/>
+//             <Handle type="source" position={Position.Bottom}/>
+//         </div>
+//     );
+// }
 
 export function BTTaskNode(nodeProps: NodeProps<BtDisplayNodeData>) {
     return (
         <div className={"task-node"} style={getCss(nodeProps)}>
-            <Handle type="target" position={Position.Top}/>
+            <Handle id={"target"} type="target" position={Position.Top}/>
             {RenderDescriptor(nodeProps)}
             <div>BTT: [{nodeProps.data.taskType}] [{nodeProps.data.order}]</div>
         </div>

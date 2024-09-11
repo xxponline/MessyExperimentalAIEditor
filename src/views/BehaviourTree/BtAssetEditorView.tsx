@@ -1,16 +1,15 @@
 import React, {type MouseEvent as ReactMouseEvent, useEffect} from "react";
 import {
     Background,
-    Controls,
+    Controls, EdgeChange,
     NodeChange,
     NodePositionChange,
-    NodeRemoveChange,
     ReactFlow,
     useEdgesState,
     useNodesState
 } from "reactflow";
 import 'reactflow/dist/style.css';
-import {BTRootNode, BTSelectorNode, BTSequenceNode, BTSimpleParallelNode, BTTaskNode} from "./BtAssetEditorNodeDisplay";
+import {BTRootNode, BTSelectorNode, BTSequenceNode, BTTaskNode} from "./BtAssetEditorNodeDisplay";
 import {
     BtAssetEditorMenuView,
     EditorContextMenuEnum,
@@ -19,254 +18,32 @@ import {
 } from "./BtAssetEditorMenuView";
 import {BtDisplayEdge, BtDisplayNode, BtDisplayNodeData, IAssetSummaryForTab} from "../../common/BtDisplayDS";
 import {
+    ConnectBehaviourTreeNodeAPI,
     CreateBehaviourTreeNodeAPI,
     MoveBehaviourTreeNodeAPI,
     ReadAssetAPI,
     RemoveBehaviourTreeNodeAPI
 } from "../../common/ServerAPI";
 import {
-    BehaviourTreeModifiedNodeDiffInfo,
+    BehaviourTreeModifiedNodeDiffInfo, ConnectBehaviourTreeNodeResponse,
     CreateBehaviourTreeNodeResponse,
-    ReadBehaviourTreeAssetResponse
+    ReadBehaviourTreeAssetResponse, RemoveBehaviourTreeNodeResponse
 } from "../../common/ResponseDS";
 import {IBtAssetDocument, ILogicBtNode} from "../../common/BtLogicDS";
 import {BtNodeType} from "../../common/BtCommon";
-import {EditorPosition} from "../../common/EditorCommon";
-import {NodeSelectionChange} from "@reactflow/core/dist/esm/types/changes";
 import {BtNodeInspectorView} from "./BtNodeInspectorView";
 import {IBtNodeInspectorHelper} from "../../viewmodels/BehaviourTree/BtNodeInspectorViewModel";
+import {Connection} from "@reactflow/core/dist/esm/types/general";
+import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
+
 
 const nodeTypes = {
     "bt_root" : BTRootNode,
     "bt_selector" : BTSelectorNode,
     "bt_sequence" : BTSequenceNode,
-    "bt_simpleParallel" : BTSimpleParallelNode,
+    // "bt_simpleParallel" : BTSimpleParallelNode,
     "bt_task" : BTTaskNode
 };
-
-
-// export class BtAssetEditorView extends React.Component<IAssetSummaryForTab,
-//     {
-//         contextMenu: EditorContextMenuEnum,
-//         menuDir: MenuDirection,
-//         position: { x: number, y: number },
-//         document: IBtAssetDocument | null,
-//         currentDocVersion: string | null,
-//         displayNodes: Array<BtDisplayNode>
-//     }> implements IBtAssetEditorMenuHelper
-// {
-//     constructor(props: IAssetSummaryForTab) {
-//         super(props);
-//         this.state = {
-//             contextMenu: EditorContextMenuEnum.None,
-//             menuDir: MenuDirection.RightDown,
-//             position: { x: 0, y: 0 },
-//             currentDocVersion: null,
-//             document: null,
-//             displayNodes: []
-//         };
-//     }
-
-    // componentDidMount() {
-    //     this.ReadBehaviourTreeDocument();
-    // }
-    //
-    // ReadBehaviourTreeDocument() {
-    //     fetch(ReadAssetAPI, {
-    //         method: 'POST',
-    //         body: JSON.stringify({ assetId: this.props.assetId })
-    //     }).then(
-    //         res => res.json()
-    //     ).then(
-    //         (jData: ReadBehaviourTreeAssetResponse) => {
-    //             let doc: IBtAssetDocument = JSON.parse(jData.assetDocument.assetContent);
-    //             this.setState({ document: doc, currentDocVersion: jData.assetDocument.assetVersion, displayNodes: this.TransformNodeFromLogicToDisplay(doc.Nodes) });
-    //         }
-    //     ).catch(
-    //
-    //     ).finally(
-    //
-    //     )
-    // }
-    //
-    // //Display Info Transform
-    // private TransformNodeFromLogicToDisplay(nodes: Array<ILogicBtNode> | undefined) : Array<BtDisplayNode> {
-    //     if(nodes) {
-    //         let displayNodes = nodes.map(node => {
-    //             let displayNode: BtDisplayNode = {
-    //                 id: node.id,
-    //                 position: node.position,
-    //                 type: node.type,
-    //                 selected: false,
-    //                 data: {
-    //                     taskType: node.data ? node.data.BttTask : "",
-    //                     order: node.order,
-    //                     descriptors: [],
-    //                     services: []
-    //                 }
-    //             }
-    //             return displayNode;
-    //         });
-    //         return displayNodes;
-    //     }
-    //     else {
-    //         return []
-    //     }
-    // }
-    //
-    // //Menu Method Implementation
-    // CreateNode(type: BtNodeType, pos: EditorPosition): void {
-    //     fetch(CreateBehaviourTreeNodeAPI, {
-    //         method: 'POST',
-    //         body: JSON.stringify(
-    //             {
-    //                 assetId: this.props.assetId,
-    //                 prevVersion: this.state.currentDocVersion,
-    //                 position: pos,
-    //                 nodeType: type
-    //             }
-    //         )
-    //     }).then(
-    //     ).then(
-    //     )
-    // }
-    //
-    // RemoveNodes(Ids: string[]): void {
-    //     fetch(RemoveBehaviourTreeNodeAPI,{
-    //         method: 'POST',
-    //         body: JSON.stringify(
-    //             {
-    //                 assetId: this.props.assetId,
-    //                 prevVersion: this.state.currentDocVersion,
-    //                 nodeIds: Ids
-    //             }
-    //         )
-    //     }).then(
-    //
-    //     )
-    // }
-    //
-    //
-    // // Show ContextMenu
-    // private elementRef: React.RefObject<HTMLDivElement> = React.createRef();
-    //
-    // OnNodeContextMenu(e: React.MouseEvent<Element, MouseEvent>) {
-    //     e.preventDefault();
-    //     let viewRectangle = this.elementRef.current!.getBoundingClientRect();
-    //     this.setState({contextMenu: EditorContextMenuEnum.Node, position: { x: e.clientX - viewRectangle.x, y: e.clientY - viewRectangle.y }});
-    // }
-    //
-    // OnPaneContextMenu(e: React.MouseEvent<Element, MouseEvent>) {
-    //     e.preventDefault();
-    //     let viewRectangle = this.elementRef.current!.getBoundingClientRect();
-    //     this.setState({contextMenu: EditorContextMenuEnum.Pane, position: { x: e.clientX - viewRectangle.x, y: e.clientY - viewRectangle.y }});
-    // }
-    //
-    // OnEdgeContextMenu(e: React.MouseEvent<Element, MouseEvent>) {
-    //     e.preventDefault();
-    //     let viewRectangle = this.elementRef.current!.getBoundingClientRect();
-    //     this.setState({contextMenu: EditorContextMenuEnum.Edge, position: { x: e.clientX - viewRectangle.x, y: e.clientY - viewRectangle.y }});
-    // }
-    //
-    // OnCancelContextMenu(e: React.MouseEvent<Element, MouseEvent>) {
-    //     this.setState({contextMenu: EditorContextMenuEnum.None});
-    // }
-    //
-    // OnNodesChange(changes: NodeChange[]) {
-    //     let selectChangeItems: NodeSelectionChange[] = [];
-    //     let positionChangeItems: NodePositionChange[] = [];
-    //     let removeChangeItems: NodeRemoveChange[] = [];
-    //
-    //     for (let changeItem of changes) {
-    //         switch (changeItem.type) {
-    //             case "select": {
-    //                 selectChangeItems.push(changeItem);
-    //             }
-    //                 break;
-    //             case "position": {
-    //                 positionChangeItems.push(changeItem);
-    //             }
-    //                 break;
-    //             case "dimensions":
-    //                 //there nothing to do when get dimensions NodeChange event
-    //                 break;
-    //             case "remove":
-    //                 removeChangeItems.push(changeItem);
-    //                 break;
-    //             default:
-    //                 console.error(changeItem);
-    //                 //BehaviourTreeModel.Instance
-    //                 break;
-    //         }
-    //     }
-
-
-        ////
-        // this.setState(prevState => ({
-        //         displayNodes: prevState.displayNodes.map((displayNode) => {
-        //             let chItem = selectChangeItems.find(ch => ch.id === displayNode.id );
-        //             if(chItem) {
-        //                 displayNode.selected = chItem.selected;
-        //             }
-        //             return displayNode
-        //         })
-        // }));
-
-        // let hasSelecting = false;
-        // for (let changeItem of selectChangeItems) {
-        //     hasSelecting = true;
-        //     for (let node of this.state.displayNodes) {
-        //         if (changeItem.id === node.id) {
-        //             node.selected = changeItem.selected;
-        //         }
-        //     }
-        // }
-    // }
-
-    // render() {
-    //
-    //     return(
-    //         <div style={{display: "flex", flexDirection: "row", alignItems: "center", height:"100%" }}>
-    //             <div style={{ width: "85%", height: "100%" }} >
-    //                 <ReactFlow
-    //                     ref={this.elementRef}
-    //                     nodes={this.state.displayNodes}
-    //                     edges={[]}
-    //                     onNodesChange={(changes) => { this.OnNodesChange(changes)}}
-    //                     onEdgesChange={() => {}}
-    //                     onNodeContextMenu={ (e) => {this.OnNodeContextMenu(e)} }
-    //                     onPaneContextMenu={ (e) => {this.OnPaneContextMenu(e)} }
-    //                     onEdgeContextMenu={ (e) => {this.OnEdgeContextMenu(e)} }
-    //                     onNodeClick={(e) => {this.OnCancelContextMenu(e)}}
-    //                     onEdgeClick={(e) => {this.OnCancelContextMenu(e)}}
-    //                     onClick={(e) => {this.OnCancelContextMenu(e)}}
-    //
-    //                     onConnect={() => {}}
-    //
-    //                     selectionOnDrag={true}
-    //                     panOnDrag={true}
-    //
-    //                     nodeTypes={nodeTypes}
-    //                 >
-    //                     <Controls/>
-    //                     {/*<MiniMap/>*/}
-    //                     <Background gap={12} size={1}/>
-    //                     <BtAssetEditorMenuView contextMenu={this.state.contextMenu}
-    //                                            dirMenu={this.state.menuDir} position={this.state.position}
-    //                                            editorHelper={this}
-    //                     />
-    //                 </ReactFlow>
-    //             </div>
-    //             <div style={{ width: "15%", height: "100%" }}>
-    //                 11111
-    //             </div>
-    //         </div>
-    //
-    //
-    //     )
-    // }
-// }
-
 
 export function NewBtEditorView(props: IAssetSummaryForTab) {
     const elementRef: React.RefObject<HTMLDivElement> = React.createRef();
@@ -277,13 +54,14 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
     const [menuDir, setMenuDir] = React.useState<MenuDirection>(MenuDirection.RightDown);
     const [menuPosition, setMenuPosition] = React.useState<{x: number, y:number}>( { x: 0, y: 0 } );
 
+    // Display Node And Edge Methods
     const transformLogicNodesArrayToDisplay = (nodes: Array<ILogicBtNode> | undefined) : Array<BtDisplayNode> => {
         if(nodes) {
             let displayNodes = nodes.map(transformNodeFromLogicToDisplay);
             return displayNodes;
         }
         else {
-            return []
+            return [];
         }
     }
 
@@ -294,6 +72,7 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
             type: logicNode.type,
             selected: false,
             data: {
+                behaviourTreeParentId: logicNode.parentId,
                 taskType: logicNode.data ? logicNode.data.BttTask : "",
                 order: logicNode.order,
                 descriptors: [],
@@ -331,6 +110,18 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
         return result
     }
 
+    const buildEdgeByDisplayNodes = (displayNodes: Array<BtDisplayNode>): Array<BtDisplayEdge> => {
+        return displayNodes.filter(m => m.data.behaviourTreeParentId.length > 0).map(m => {
+            return {
+                id: generateUniqueID(),
+                source: m.data.behaviourTreeParentId,
+                target: m.id
+            }
+        })
+    }
+
+    //End Display Node And Edge Methods
+
     useEffect(() => {
         fetch(ReadAssetAPI, {
             method: 'POST',
@@ -349,6 +140,11 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
 
         )
     },[])
+
+    useEffect(() => {
+        setEdges(buildEdgeByDisplayNodes(displayNodes));
+    }, [displayNodes])
+
 
     //Inspector Helper
 
@@ -380,8 +176,11 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
         ).then(
             (res: CreateBehaviourTreeNodeResponse) => {
                 if(res.errCode === 0) {
-                    setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, res.modificationInfo.diffNodesInfos))
-                    SetAssetVersion(res.modificationInfo.newVersion);
+                    if(assetVersion !== res.modificationInfo.newVersion)
+                    {
+                        setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, res.modificationInfo.diffNodesInfos))
+                        SetAssetVersion(res.modificationInfo.newVersion);
+                    }
                 }
             }
         )
@@ -402,10 +201,12 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
             }).then(
                 res => res.json()
             ).then(
-                (res: CreateBehaviourTreeNodeResponse) => {
+                (res: RemoveBehaviourTreeNodeResponse) => {
                     if(res.errCode === 0) {
-                        setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, res.modificationInfo.diffNodesInfos))
-                        SetAssetVersion(res.modificationInfo.newVersion);
+                        if(assetVersion !== res.modificationInfo.newVersion) {
+                            setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, res.modificationInfo.diffNodesInfos))
+                            SetAssetVersion(res.modificationInfo.newVersion);
+                        }
                     }
                 }
             )
@@ -419,7 +220,59 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
 
     //End Menu Helper
 
-    //Node Change Methods
+    //About Connections
+    const OnConnecting = (connection: Connection) => {
+        // Ensure Parent & Client
+        let parentId = "";
+        let clientId = "";
+        if(connection.sourceHandle === "source" && connection.targetHandle === "target")
+        {
+            parentId = connection.source!;
+            clientId = connection.target!;
+        }
+        else if(connection.sourceHandle === "target" && connection.targetHandle === "source")
+        {
+            parentId = connection.target!;
+            clientId = connection.source!;
+        }
+        else{
+            console.error(`err connection: ${JSON.stringify(connection)} `);
+            return;
+        }
+        fetch(ConnectBehaviourTreeNodeAPI, {
+            method: 'POST',
+            body: JSON.stringify(
+                {
+                    assetId: props.assetId,
+                    currentVersion: assetVersion,
+                    parentNodeId: parentId,
+                    childNodeId: clientId
+                }
+            )
+        }).then(
+            res => res.json()
+        ).then(
+            (res: ConnectBehaviourTreeNodeResponse) => {
+                if(res.errCode === 0) {
+                    if(assetVersion !== res.modificationInfo.newVersion)
+                    {
+                        console.log(res.modificationInfo.diffNodesInfos)
+                        setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, res.modificationInfo.diffNodesInfos))
+                        SetAssetVersion(res.modificationInfo.newVersion);
+                    }
+                }
+            }
+        )
+    }
+
+    //End About Connections
+
+    //Node/Edge Change Methods
+    const OnCustomEdgeChange = (changes: EdgeChange[]) => {
+        console.log(changes);
+
+        onEdgesChange(changes);
+    }
 
     const OnCustomNodesChange = (changes: NodeChange[]) => {
         changes = changes.filter(m => m.type !== 'remove'); //filter remove todo we can consider integrate our remove logic here?
@@ -436,13 +289,13 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
                     toPosition: m.position
                 }}))
             }
-
         }
 
         onNodesChange(changes)
     }
 
     const RequestMoveBehaviourTreeNodes = (movementInfos: Array<{ nodeId: string, toPosition: { x: number, y: number } }>) => {
+        console.log("RequestMoveBehaviourTreeNodes Need Optimize");
         if(movementInfos.length > 0){
             fetch(MoveBehaviourTreeNodeAPI, {
                 method: 'POST',
@@ -504,7 +357,7 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
                     nodes={displayNodes}
                     edges={edges}
                     onNodesChange={OnCustomNodesChange}
-                    onEdgesChange={onEdgesChange}
+                    onEdgesChange={OnCustomEdgeChange}
                     onNodeContextMenu={(e) => OnInvokeContextMenu(e, EditorContextMenuEnum.Node)}
                     onPaneContextMenu={(e) => OnInvokeContextMenu(e, EditorContextMenuEnum.Pane)}
                     onEdgeContextMenu={(e) => OnInvokeContextMenu(e, EditorContextMenuEnum.Edge)}
@@ -512,7 +365,7 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
                     onEdgeClick={(e) => OnInvokeContextMenu(e, EditorContextMenuEnum.None)}
                     onClick={(e) => OnInvokeContextMenu(e, EditorContextMenuEnum.None)}
 
-                    onConnect={() => {}}
+                    onConnect={OnConnecting}
 
                     selectionOnDrag={true}
                     panOnDrag={false}
