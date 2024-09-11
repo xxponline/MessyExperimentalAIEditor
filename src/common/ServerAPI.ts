@@ -13,4 +13,5 @@ export const CreateBehaviourTreeNodeAPI: string = `${ServerUrl}/AssetContentModi
 export const RemoveBehaviourTreeNodeAPI: string = `${ServerUrl}/AssetContentModifier/RemoveBehaviourTreeNode`;
 export const MoveBehaviourTreeNodeAPI: string = `${ServerUrl}/AssetContentModifier/MoveBehaviourTreeNode`;
 export const ConnectBehaviourTreeNodeAPI: string = `${ServerUrl}/AssetContentModifier/ConnectBehaviourTreeNode`;
+export const DisconnectBehaviourTreeNodeAPI: string = `${ServerUrl}/AssetContentModifier/DisconnectBehaviourTreeNode`;
 export const UpdateBehaviourTreeNodeAPI: string = `${ServerUrl}/AssetContentModifier/UpdateBehaviourTreeNode`;

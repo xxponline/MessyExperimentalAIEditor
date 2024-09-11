@@ -24,6 +24,8 @@ export interface IBtAssetEditorMenuHelper {
     CreateNode(type: BtNodeType, pos: EditorPosition): void;
 
     RemoveNodes(): void;
+
+    Disconnect(): void;
     //
     // LinkNode(source: string, target: string): void;
     //
@@ -92,9 +94,9 @@ export class BtAssetEditorMenuView
                         className="context-menu"
                     >
                         <p style={{margin: '0.5em'}}>
-                            <small>edge: 1111</small>
+                            <small>edge</small>
                         </p>
-                        <button onClick={() => {}}>Unlink</button>
+                        <button onClick={() => {this.props.editorHelper.Disconnect()}}>Disconnect</button>
                     </div>
                 );
             case EditorContextMenuEnum.Node:

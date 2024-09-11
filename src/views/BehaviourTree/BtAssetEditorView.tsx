@@ -19,7 +19,7 @@ import {
 import {BtDisplayEdge, BtDisplayNode, BtDisplayNodeData, IAssetSummaryForTab} from "../../common/BtDisplayDS";
 import {
     ConnectBehaviourTreeNodeAPI,
-    CreateBehaviourTreeNodeAPI,
+    CreateBehaviourTreeNodeAPI, DisconnectBehaviourTreeNodeAPI,
     MoveBehaviourTreeNodeAPI,
     ReadAssetAPI,
     RemoveBehaviourTreeNodeAPI
@@ -213,9 +213,39 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
         }
     }
 
+    const RequestDisconnectSelectedBehaviourTreeConnections = () => {
+        let selectedEdge = edges.filter(m => m.selected);
+        let waitToDisconnectChildIds = selectedEdge.map(m => m.target);
+        if(waitToDisconnectChildIds.length > 0) {
+            fetch(DisconnectBehaviourTreeNodeAPI, {
+                method: 'POST',
+                body: JSON.stringify(
+                    {
+                        assetId: props.assetId,
+                        currentVersion: assetVersion,
+                        childNodeIds: waitToDisconnectChildIds,
+                    }
+                )
+            }).then(
+                res => res.json()
+            ).then(
+                (res: RemoveBehaviourTreeNodeResponse) => {
+                    if(res.errCode === 0) {
+                        console.log(res.modificationInfo)
+                        if(assetVersion !== res.modificationInfo.newVersion) {
+                            setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, res.modificationInfo.diffNodesInfos))
+                            SetAssetVersion(res.modificationInfo.newVersion);
+                        }
+                    }
+                }
+            )
+        }
+    }
+
     const menuHelper: IBtAssetEditorMenuHelper = {
         CreateNode: RequestCreateBehaviourTreeNode,
         RemoveNodes: RequestRemoveSelectedBehaviourTreeNodes,
+        Disconnect: RequestDisconnectSelectedBehaviourTreeConnections
     }
 
     //End Menu Helper
@@ -269,8 +299,7 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
 
     //Node/Edge Change Methods
     const OnCustomEdgeChange = (changes: EdgeChange[]) => {
-        console.log(changes);
-
+        changes = changes.filter(m => m.type !== 'remove') //Skip remove TODO consider request disconnect here in future
         onEdgesChange(changes);
     }
 
