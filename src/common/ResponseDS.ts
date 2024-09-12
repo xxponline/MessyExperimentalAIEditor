@@ -34,6 +34,7 @@ export interface AssetDocument {
 }
 
 export interface BehaviourTreeModifiedNodeDiffInfo {
+    modifiedNodeId: string
     preModifiedNode: ILogicBtNode | undefined,
     postModifiedNode: ILogicBtNode | undefined
 }

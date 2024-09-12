@@ -83,14 +83,17 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
     }
 
     const passModifiedNodeInfos = (prevDisplayNodes: Array<BtDisplayNode>, modifiedDiffInfos: Array<BehaviourTreeModifiedNodeDiffInfo>) : Array<BtDisplayNode> => {
+        console.log(modifiedDiffInfos)
         //pass remove or update
         let result: Array<BtDisplayNode> = [];
         for(let item of prevDisplayNodes) {
-            let modifiedInfoItem = modifiedDiffInfos.find(m => m.preModifiedNode?.id === item.id);
+            let modifiedInfoItem = modifiedDiffInfos.find(m => m.modifiedNodeId === item.id);
             if(modifiedInfoItem) {
                 if(modifiedInfoItem.postModifiedNode) {
                     // Update
-                    result.push(transformNodeFromLogicToDisplay(modifiedInfoItem.postModifiedNode))
+                    let newDisplayNode = transformNodeFromLogicToDisplay(modifiedInfoItem.postModifiedNode);
+                    newDisplayNode.selected = item.selected;
+                    result.push(newDisplayNode)
                 }
                 else {
                     // Remove, do nothing
@@ -340,7 +343,7 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
             ).then(
                 (res: CreateBehaviourTreeNodeResponse) => {
                     if(res.errCode === 0) {
-                        //The display refreshing is not necessary in movement response
+                        setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, res.modificationInfo.diffNodesInfos))
                         SetAssetVersion(res.modificationInfo.newVersion);
                     }
                 }
