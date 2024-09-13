@@ -1,4 +1,4 @@
-const ServerUrl : string = "http://localhost:8000";
+const ServerUrl : string = "API";
 
 export const ListSolutionsAPI: string = `${ServerUrl}/AssetManagement/ListSolutions`;
 export const CreateSolutionAPI: string = `${ServerUrl}/AssetManagement/CreateSolution`;
