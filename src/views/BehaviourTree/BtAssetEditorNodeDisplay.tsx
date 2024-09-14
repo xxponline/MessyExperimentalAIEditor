@@ -63,7 +63,7 @@ export function BTTaskNode(nodeProps: NodeProps<BtDisplayNodeData>) {
         <div className={"task-node"} style={getCss(nodeProps)}>
             <Handle id={"target"} type="target" position={Position.Top}/>
             {RenderDescriptor(nodeProps)}
-            <div>BTT: [{nodeProps.data.taskType}] [{nodeProps.data.order}]</div>
+            <div>BTT: [{nodeProps.data.settings.SubType}] [{nodeProps.data.order}]</div>
         </div>
     );
 }

@@ -3,9 +3,10 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import {IAssetSummaryForTab} from "../common/BtDisplayDS";
-import {NewBtEditorView} from "./BehaviourTree/BtAssetEditorView";
+import {BehaviourTreeGraphEditorView} from "./BehaviourTree/BtAssetEditorView";
+import {SolutionDetailItem} from "../common/ResponseDS";
 
-export default function DocumentTabs(props: { openingDocuments: IAssetSummaryForTab[] }) {
+export default function DocumentTabs(props: { openingDocuments: IAssetSummaryForTab[] , solutionInfo: SolutionDetailItem }) {
     const [value, setValue] = React.useState(0);
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -22,13 +23,13 @@ export default function DocumentTabs(props: { openingDocuments: IAssetSummaryFor
                 </Tabs>
             </Box>
             {
-                props.openingDocuments.map((doc, i) => { return <DocumentTabPanel key={doc.assetId} selectedIndexValue={value} index={i} {...doc} />})
+                props.openingDocuments.map((doc, i) => { return <DocumentTabPanel key={doc.assetId} selectedIndexValue={value} index={i} {...doc} solutionInfo={props.solutionInfo} />})
             }
         </Box>
     );
 }
 
-function DocumentTabPanel(props: IAssetSummaryForTab & { selectedIndexValue: number, index: number }) {
+function DocumentTabPanel(props: IAssetSummaryForTab & { solutionInfo: SolutionDetailItem, selectedIndexValue: number, index: number }) {
     const { selectedIndexValue, index } = props;
     if(props.assetType === "BehaviourTree") {
         return (
@@ -36,7 +37,7 @@ function DocumentTabPanel(props: IAssetSummaryForTab & { selectedIndexValue: num
                 hidden={selectedIndexValue !== index}
             >
                 {selectedIndexValue === index &&
-                    <NewBtEditorView {...props} />
+                    <BehaviourTreeGraphEditorView {...props} />
                 }
             </div>
         );

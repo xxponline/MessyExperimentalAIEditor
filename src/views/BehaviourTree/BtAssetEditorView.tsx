@@ -27,12 +27,11 @@ import {
 import {
     BehaviourTreeModifiedNodeDiffInfo, ConnectBehaviourTreeNodeResponse,
     CreateBehaviourTreeNodeResponse,
-    ReadBehaviourTreeAssetResponse, RemoveBehaviourTreeNodeResponse
+    ReadBehaviourTreeAssetResponse, RemoveBehaviourTreeNodeResponse, SolutionDetailItem
 } from "../../common/ResponseDS";
-import {IBtAssetDocument, ILogicBtNode} from "../../common/BtLogicDS";
+import {IBtAssetDocument, IBtSettings, ILogicBtNode} from "../../common/BtLogicDS";
 import {BtNodeType} from "../../common/BtCommon";
-import {BtNodeInspectorView} from "./BtNodeInspectorView";
-import {IBtNodeInspectorHelper} from "../../viewmodels/BehaviourTree/BtNodeInspectorViewModel";
+import {BtNodeInspectorView, IBtNodeConfigurableData, IBtNodeInspectorHelper} from "./BtNodeInspectorView";
 import {Connection} from "@reactflow/core/dist/esm/types/general";
 import {generateUniqueID} from "web-vitals/dist/modules/lib/generateUniqueID";
 
@@ -45,7 +44,7 @@ const nodeTypes = {
     "bt_task" : BTTaskNode
 };
 
-export function NewBtEditorView(props: IAssetSummaryForTab) {
+export function BehaviourTreeGraphEditorView(props: IAssetSummaryForTab & { solutionInfo: SolutionDetailItem }) {
     const elementRef: React.RefObject<HTMLDivElement> = React.createRef();
     const [displayNodes, setDisplayNodes, onNodesChange] = useNodesState<BtDisplayNodeData>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<BtDisplayEdge>([]);
@@ -73,10 +72,10 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
             selected: false,
             data: {
                 behaviourTreeParentId: logicNode.parentId,
-                taskType: logicNode.data ? logicNode.data.BttTask : "",
                 order: logicNode.order,
                 descriptors: [],
-                services: []
+                services: [],
+                settings: logicNode.settings
             }
         }
         return displayNode;
@@ -163,7 +162,7 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
     //End Inspector Helper
 
     //Menu Helper
-    const RequestCreateBehaviourTreeNode = (nType: BtNodeType, position: { x: number, y: number }) => {
+    const RequestCreateBehaviourTreeNode = (nType: BtNodeType, position: { x: number, y: number }, initialSettings: IBtSettings) => {
         fetch(CreateBehaviourTreeNodeAPI, {
             method: 'POST',
             body: JSON.stringify(
@@ -171,7 +170,8 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
                     assetId: props.assetId,
                     currentVersion: assetVersion,
                     position: position,
-                    nodeType: nType
+                    nodeType: nType,
+                    initialSettings: initialSettings
                 }
             )
         }).then(
@@ -353,19 +353,25 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
 
     //End Node Change Methods
 
-    const GetSelectedNodeInfo = (): [string, string] => {
+    const GetSelectedNodeInfo = (): [string, string, IBtNodeConfigurableData | null] => {
         let selectedDisplayNodes = displayNodes.filter(m => m.selected);
         if(selectedDisplayNodes.length === 0) {
-            return ["Empty Selected", "Empty Selected"]
+            return ["Empty Selected", "Empty Selected", null]
         }
         else if(selectedDisplayNodes.length === 1) {
-            return [selectedDisplayNodes[0].type!, selectedDisplayNodes[0].id];
+            let selectedNode = selectedDisplayNodes[0];
+            let configurableData: IBtNodeConfigurableData = {
+                Settings: selectedNode.data.settings,
+                Descriptions: selectedNode.data.descriptors,
+                Services: selectedNode.data.services
+            }
+            return [selectedDisplayNodes[0].type!, selectedDisplayNodes[0].id, configurableData];
         }
         else {
-            return ["Multiple Selected","Multiple Selected"]
+            return ["Multiple Selected","Multiple Selected", null]
         }
     }
-    let [selectedType, selectedId] = GetSelectedNodeInfo();
+    let [selectedType, selectedId, configurableData] = GetSelectedNodeInfo();
 
 
     const OnInvokeContextMenu = (event: ReactMouseEvent, menuType: EditorContextMenuEnum) => {
@@ -410,11 +416,12 @@ export function NewBtEditorView(props: IAssetSummaryForTab) {
                     <BtAssetEditorMenuView contextMenu={contextMenuType}
                                            dirMenu={menuDir} position={menuPosition}
                                            editorHelper={menuHelper}
+                                           solutionInfo={props.solutionInfo}
                     />
                 </ReactFlow>
             </div>
             <div style={{width: "15%", height: "100%"}}>
-                <BtNodeInspectorView DocVersion={assetVersion} BttViewInfo={null} NodeType={selectedType} InspectNodeId={selectedId} Helper={inspectorHelper} />
+                <BtNodeInspectorView DocVersion={assetVersion} NodeType={selectedType} InspectNodeId={selectedId} ConfigurableData={configurableData} Helper={inspectorHelper} SolutionDetailInfo={props.solutionInfo} />
             </div>
         </div>
     );

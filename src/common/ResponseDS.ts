@@ -7,8 +7,26 @@ export interface ServerCommonResponse {
 
 export interface SolutionItem {
     solutionId: string,
-    solutionName: string
+    solutionName: string,
+    solutionVersion: string
 }
+
+export interface SolutionDetailItem extends SolutionItem {
+    solutionMeta : {
+        CompositeTypeMetas: Array<object>,
+        BttMetas: Array<BehaviourTreeTaskNodeMeta>,
+        BtdMetas: Array<object>,
+        BtsMetas: Array<object>,
+    }
+}
+
+//Meta
+export interface BehaviourTreeTaskNodeMeta {
+    BttType: string,
+    Content: object
+}
+
+//End Meta
 
 export interface AssetSetItem {
     assetSetId: string,
@@ -46,6 +64,7 @@ export interface BehaviourTreeNodeModificationInfo {
 }
 
 export type ListSolutionResponse = ServerCommonResponse & { solutions: SolutionItem[] }
+export type GetSolutionDetailResponse = ServerCommonResponse & { solutionDetail: SolutionDetailItem }
 export type ListAssetSetsResponse = ServerCommonResponse & { assetSets: AssetSetItem[] }
 export type ListAssetsResponse = ServerCommonResponse & { assetSummaryInfos: AssetSummaryItem[] }
 

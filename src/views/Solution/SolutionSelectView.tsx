@@ -1,6 +1,11 @@
 import React from "react";
-import {ListSolutionResponse, SolutionItem} from "../../common/ResponseDS";
-import {ListSolutionsAPI} from "../../common/ServerAPI";
+import {
+    GetSolutionDetailResponse,
+    ListSolutionResponse,
+    SolutionDetailItem,
+    SolutionItem
+} from "../../common/ResponseDS";
+import {GetSolutionDetailAPI, ListSolutionsAPI} from "../../common/ServerAPI";
 import {GeneralEnumEditorTerm} from "../CommonComponent/EnumEditableTerm";
 import ExploreIcon from '@mui/icons-material/Explore';
 import {Button} from "@mui/material";
@@ -27,7 +32,7 @@ class SolutionSelector extends GeneralEnumEditorTerm<SolutionItem> {
     }
 }
 
-export class SolutionSelectView extends React.Component<{ OnSelectSolution: (solution: SolutionItem) => void }, { mode: SolutionSelectMode, existSolutions : SolutionItem[]}>{
+export class SolutionSelectView extends React.Component<{ OnSelectSolution: (solution: SolutionDetailItem) => void }, { mode: SolutionSelectMode, existSolutions : SolutionItem[]}>{
     constructor(props: any) {
         super(props);
         this.state = {
@@ -39,7 +44,6 @@ export class SolutionSelectView extends React.Component<{ OnSelectSolution: (sol
     private SelectedSolution : SolutionItem | null = null;
 
     componentDidMount() {
-        //console.log("1111");
         this.RequestListAllSolutions()
     }
 
@@ -50,6 +54,24 @@ export class SolutionSelectView extends React.Component<{ OnSelectSolution: (sol
             if(data.solutions.length > 0) {
                 this.setState({ existSolutions: data.solutions, mode: SolutionSelectMode.Select });
                 this.SelectedSolution = data.solutions[0];
+            }
+            else {
+
+            }
+        }).catch(
+            //TODO
+        );
+    }
+
+    private RequestSolutionDetail(id: string): void {
+        fetch(GetSolutionDetailAPI, {
+            method: "POST",
+            body: JSON.stringify({ solutionId: id})
+        }).
+        then(res => res.json()).
+        then((data : GetSolutionDetailResponse)  => {
+            if(data.errCode === 0) {
+                this.props.OnSelectSolution(data.solutionDetail);
             }
             else {
 
@@ -70,7 +92,7 @@ export class SolutionSelectView extends React.Component<{ OnSelectSolution: (sol
     private OnOpenClick() : void {
         if(this.SelectedSolution != null)
         {
-            this.props.OnSelectSolution(this.SelectedSolution);
+            this.RequestSolutionDetail(this.SelectedSolution.solutionId);
         }
     }
 

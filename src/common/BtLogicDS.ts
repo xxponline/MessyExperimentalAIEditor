@@ -10,7 +10,7 @@ export interface ILogicBtNode {
     parentId: string,
     position: { x: number, y: number },
     type: BtNodeType,
-    data: IBtSettings | null
+    settings: IBtSettings | null
 }
 
 export interface ILogicBtDescriptor {

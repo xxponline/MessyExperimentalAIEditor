@@ -2,6 +2,7 @@ const ServerUrl : string = "API";
 
 export const ListSolutionsAPI: string = `${ServerUrl}/AssetManagement/ListSolutions`;
 export const CreateSolutionAPI: string = `${ServerUrl}/AssetManagement/CreateSolution`;
+export const GetSolutionDetailAPI: string = `${ServerUrl}/AssetManagement/GetSolutionDetail`;
 
 export const ListAssetSetsAPI: string = `${ServerUrl}/AssetManagement/ListAssetSets`;
 export const CreateAssetSetAPI: string = `${ServerUrl}/AssetManagement/CreateAssetSet`;
