@@ -25,7 +25,7 @@ import {
     RemoveBehaviourTreeNodeAPI
 } from "../../common/ServerAPI";
 import {
-    BehaviourTreeModifiedNodeDiffInfo, ConnectBehaviourTreeNodeResponse,
+    BehaviourTreeModifiedNodeDiffInfo, BehaviourTreeNodeModificationInfo, ConnectBehaviourTreeNodeResponse,
     CreateBehaviourTreeNodeResponse,
     ReadBehaviourTreeAssetResponse, RemoveBehaviourTreeNodeResponse, SolutionDetailItem
 } from "../../common/ResponseDS";
@@ -151,11 +151,11 @@ export function BehaviourTreeGraphEditorView(props: IAssetSummaryForTab & { solu
     //Inspector Helper
 
     const inspectorHelper: IBtNodeInspectorHelper = {
-        UpdateBttType: (currentTypeName: string): void => {
-
-        },
-        UpdateSettings: (settingItermKey: string, settingValue: any): void => {
-
+        OnUpdatedBehaviourTreeNodeSettings(modifiedInfo: BehaviourTreeNodeModificationInfo) {
+            if(modifiedInfo.prevVersion == assetVersion){
+                setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, modifiedInfo.diffNodesInfos))
+                SetAssetVersion(modifiedInfo.newVersion);
+            }
         }
     }
 
@@ -421,7 +421,7 @@ export function BehaviourTreeGraphEditorView(props: IAssetSummaryForTab & { solu
                 </ReactFlow>
             </div>
             <div style={{width: "15%", height: "100%"}}>
-                <BtNodeInspectorView DocVersion={assetVersion} NodeType={selectedType} InspectNodeId={selectedId} ConfigurableData={configurableData} Helper={inspectorHelper} SolutionDetailInfo={props.solutionInfo} />
+                <BtNodeInspectorView DocVersion={assetVersion} NodeType={selectedType} InspectNodeId={selectedId} AssetId={props.assetId} Helper={inspectorHelper} SolutionDetailInfo={props.solutionInfo} />
             </div>
         </div>
     );

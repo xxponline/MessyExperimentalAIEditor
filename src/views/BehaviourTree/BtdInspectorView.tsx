@@ -65,7 +65,7 @@ export default class BtdInspectorView extends React.Component<IBtdInspectorViewP
                     </div>
                     {
                         Object.entries(BtdTypeMeta.Content).map(([key, metaItem]) =>
-                            <SettingsEditableTerm key={key} settingsKey={key} meta={metaItem} value={btdItem[key]}
+                            <SettingsEditableTerm key={key} settingsLabel={key} meta={metaItem} value={btdItem[key]}
                                                   onValueChange={(value) => {
                                                       this.props.Helper.UpdateBtdSettings(btdItem.id, key, value)
                                                   }}/>

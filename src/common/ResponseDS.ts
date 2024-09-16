@@ -1,4 +1,5 @@
 import {ILogicBtNode} from "./BtLogicDS";
+import {BttNodeMeta} from "./BtCommon";
 
 export interface ServerCommonResponse {
     errCode: number,
@@ -14,19 +15,11 @@ export interface SolutionItem {
 export interface SolutionDetailItem extends SolutionItem {
     solutionMeta : {
         CompositeTypeMetas: Array<object>,
-        BttMetas: Array<BehaviourTreeTaskNodeMeta>,
+        BttMetas: Array<BttNodeMeta>,
         BtdMetas: Array<object>,
         BtsMetas: Array<object>,
     }
 }
-
-//Meta
-export interface BehaviourTreeTaskNodeMeta {
-    BttType: string,
-    Content: object
-}
-
-//End Meta
 
 export interface AssetSetItem {
     assetSetId: string,
@@ -74,4 +67,6 @@ export type MoveBehaviourTreeNodeResponse = ServerCommonResponse & { modificatio
 export type UpdateBehaviourTreeNodeResponse = ServerCommonResponse & { modificationInfo: BehaviourTreeNodeModificationInfo }
 export type RemoveBehaviourTreeNodeResponse = ServerCommonResponse & { modificationInfo: BehaviourTreeNodeModificationInfo }
 export type ConnectBehaviourTreeNodeResponse = ServerCommonResponse & { modificationInfo: BehaviourTreeNodeModificationInfo }
+
+export type GetDetailInfoAboutBehaviourTreeNodeResponse = ServerCommonResponse & { nodeInfo: ILogicBtNode }
 

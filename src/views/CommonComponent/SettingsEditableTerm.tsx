@@ -5,43 +5,42 @@ import {FloatEditableTerm} from "./FloatEditableTerm";
 import {EnumEditorTerm} from "./EnumEditableTerm";
 import {BooleanEditableTerm} from "./BooleanEditableTerm";
 
-export default function SettingsEditableTerm(props: {settingsKey: string, meta: any, value: any, onValueChange: (value: any) => void}) {
+export default function SettingsEditableTerm(props: {settingsLabel: string, meta: any, value: any, onValueChange: (value: any) => void}) {
     switch (props.meta.type) {
         case "String":
             return (
                 <StringEditableTerm
-                    value={props.value} label={props.settingsKey}
+                    value={props.value} label={props.settingsLabel}
                     onValueChange = {(value) => props.onValueChange(value)}
                 />
             );
         case "Int":
             return (
                 <IntEditableTerm
-                    value={props.value} label={props.settingsKey}
+                    value={props.value} label={props.settingsLabel}
                     onValueChange = {(value) => props.onValueChange(value)}
                 />
             );
         case "Float":
             return (
                 <FloatEditableTerm
-                    value={props.value} label={props.settingsKey}
+                    value={props.value} label={props.settingsLabel}
                     onValueChange = {(value) => props.onValueChange(value)}
                 />
             );
         case "Enum":
-            //console.log(props);
             return (
                 <EnumEditorTerm
-                    label = {props.settingsKey}
+                    label = {props.settingsLabel}
                     currentItem = {props.value}
-                    optionalItems = {props.meta.OptionalItems}
+                    optionalItems = {props.meta.optionalItems}
                     onValueChange = {(value) => props.onValueChange(value)}
                 />
             );
         case "Boolean":
             return (
                 <BooleanEditableTerm
-                    label={props.settingsKey} value={props.value}
+                    label={props.settingsLabel} value={props.value}
                     onValueChange = {(value) => props.onValueChange(value)}
                 />
             );
