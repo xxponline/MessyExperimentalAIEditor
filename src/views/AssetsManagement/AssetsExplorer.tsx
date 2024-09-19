@@ -1,7 +1,14 @@
-import React, {useEffect} from "react";
-import {ToggleButton, ToggleButtonGroup} from "@mui/material";
-import {ListAssetsAPI, ListAssetSetsAPI} from "../../common/ServerAPI";
-import {AssetSetItem, AssetSummaryItem, ListAssetSetsResponse, ListAssetsResponse} from "../../common/ResponseDS";
+import React, {useEffect, useRef} from "react";
+import {IconButton, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import {CreateAssetSetAPI, ListAssetsAPI, ListAssetSetsAPI} from "../../common/ServerAPI";
+import {
+    AssetSetItem,
+    AssetSummaryItem,
+    CreateAssetSetResponse,
+    ListAssetSetsResponse,
+    ListAssetsResponse
+} from "../../common/ResponseDS";
 import {AssetsTable} from "./AssetsTable";
 import {IAssetSummaryForTab} from "../../common/BtDisplayDS";
 
@@ -10,6 +17,8 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
     const [assetSets, setAssetSets] = React.useState<AssetSetItem[]>([]);
     const [selectedAssetSetId, setSelectedAssetSetId] = React.useState<string>("");
     const [assetSummaryInfos, setAssetSummaryInfos] = React.useState<(AssetSummaryItem & { id: string})[]>([])
+
+    const createAssetSetTogKey = "CreateNewAssetSet";
 
     useEffect(() => {
         fetch(ListAssetSetsAPI,
@@ -32,7 +41,11 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
     }, []);
 
     useEffect(() => {
-        if (selectedAssetSetId.length > 0) {
+        if(selectedAssetSetId === createAssetSetTogKey){
+            setAssetSummaryInfos([]);
+            newAssetSetNameRef.current?.focus();
+        }
+        else if (selectedAssetSetId.length > 0) {
             fetch(ListAssetsAPI,
                 {
                     method: "POST",
@@ -52,6 +65,31 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
         }
     }, [selectedAssetSetId]);
 
+    const newAssetSetNameRef = useRef<HTMLInputElement>();
+    const handleCreateAssetSetClick = () => {
+        if(selectedAssetSetId === createAssetSetTogKey){
+            if(newAssetSetNameRef.current!.value.length > 0)
+            {
+                fetch(CreateAssetSetAPI, {
+                    method: "POST",
+                    body: JSON.stringify({ solutionId: props.solutionId, assetSetName: newAssetSetNameRef.current!.value })
+                }).then(
+                    (res) => res.json()
+                ).then(
+                    (result: CreateAssetSetResponse) => {
+                        if(result.errCode === 0) {
+                            setAssetSets(result.assetSets);
+                            setSelectedAssetSetId(result.newAssetSetId);
+                        }
+                    }
+                )
+            }
+        }
+        else {
+            setSelectedAssetSetId(createAssetSetTogKey);
+        }
+    }
+
     return (
         <div style={{ width: "60vw", height: "60vh", display: "flex" }}>
             <div style={{ padding: "20px", width: "20%"}}>
@@ -70,12 +108,31 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
                                 <ToggleButton style={{ margin: "5px 0px"}} key={asset.assetSetId} value={asset.assetSetId} aria-label="list">
                                     {asset.assetSetName}
                                 </ToggleButton>
-                            )}
+                            )
+                        }
+
+                        {
+                            <div style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
+                                <TextField
+                                    type={selectedAssetSetId === createAssetSetTogKey ? "text" : "hidden"}
+                                    inputRef={newAssetSetNameRef}
+                                    style={{margin: "10px 5px"}}
+                                    label="Set Name"
+                                    id="standard-size-small"
+                                    size="small"
+                                    variant="standard"
+                                />
+                                <IconButton aria-label="add" onClick={handleCreateAssetSetClick}>
+                                    <AddCircleOutlineIcon/>
+                                </IconButton>
+                            </div>
+                        }
+
                     </ToggleButtonGroup>
                 </div>
             </div>
             <div style={{background: "#ccc", width: "1px"}}/>
-            <div style={{width:"80%"}}>
+            <div style={{width: "80%"}}>
                 <AssetsTable AssetList={assetSummaryInfos} OnOpenDocument={props.OnOpenDocument}/>
             </div>
         </div>

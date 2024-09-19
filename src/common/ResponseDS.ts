@@ -59,6 +59,7 @@ export interface BehaviourTreeNodeModificationInfo {
 export type ListSolutionResponse = ServerCommonResponse & { solutions: SolutionItem[] }
 export type GetSolutionDetailResponse = ServerCommonResponse & { solutionDetail: SolutionDetailItem }
 export type ListAssetSetsResponse = ServerCommonResponse & { assetSets: AssetSetItem[] }
+export type CreateAssetSetResponse = ServerCommonResponse & { newAssetSetId: string, assetSets: AssetSetItem[] }
 export type ListAssetsResponse = ServerCommonResponse & { assetSummaryInfos: AssetSummaryItem[] }
 
 export type ReadBehaviourTreeAssetResponse = ServerCommonResponse & { assetDocument: AssetDocument }
