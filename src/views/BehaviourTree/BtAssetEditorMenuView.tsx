@@ -38,10 +38,22 @@ export interface IBtAssetEditorMenuHelper {
     // Paste(pos: EditorPosition): void;
 }
 
+export interface IMenuPositions
+{
+    viewPosition: {
+        x:number,
+        y:number
+    },
+    screenPosition: {
+        x: number,
+        y:number
+    }
+}
+
 export interface IBtAssetEditorEnumProps {
     contextMenu: EditorContextMenuEnum;
     dirMenu: MenuDirection;
-    position: EditorPosition;
+    menuPositions: IMenuPositions
 
     editorHelper: IBtAssetEditorMenuHelper;
 
@@ -49,7 +61,7 @@ export interface IBtAssetEditorEnumProps {
 }
 
 export function BtAssetEditorMenuView(props: IBtAssetEditorEnumProps) {
-    let localInfo : MenuLocalInfo = { left: props.position.x, top: props.position.y };
+    let localInfo : MenuLocalInfo = { left: props.menuPositions.viewPosition.x, top: props.menuPositions.viewPosition.y };
     let availableBttTypes = props.solutionInfo.solutionMeta.BttMetas.map(m => m.BttType);
     switch (props.contextMenu) {
         case EditorContextMenuEnum.None:
@@ -63,21 +75,21 @@ export function BtAssetEditorMenuView(props: IBtAssetEditorEnumProps) {
                     <button onClick={
                         () => {
                             props.editorHelper.CreateNode("bt_selector",
-                                {x: props.position.x, y: props.position.y}, null
+                                props.menuPositions.screenPosition, null
                             );
                         }}>Create Selector
                     </button>
                     <button onClick={
                         () => {
                             props.editorHelper.CreateNode("bt_sequence",
-                                {x: props.position.x, y: props.position.y}, null
+                                props.menuPositions.screenPosition, null
                             );
                         }}>Create Sequence
                     </button>
                     <button onClick={
                         () => {
                             props.editorHelper.CreateNode("bt_simpleParallel",
-                                {x: props.position.x, y: props.position.y}, null
+                                props.menuPositions.screenPosition, null
                             );
                         }}>Create SimpleParallel
                     </button>
@@ -86,7 +98,7 @@ export function BtAssetEditorMenuView(props: IBtAssetEditorEnumProps) {
                         Object.entries(availableBttTypes).map(([key, item]) =>
                             <button onClick={() => {
                                 props.editorHelper.CreateNode("bt_task",
-                                    {x: props.position.x, y: props.position.y}, { SubType: item }
+                                    props.menuPositions.screenPosition, { SubType: item }
                                 );
                             }}>Create Task - {item}
                             </button>

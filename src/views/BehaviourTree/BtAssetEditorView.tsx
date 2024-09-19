@@ -1,19 +1,19 @@
 import React, {type MouseEvent as ReactMouseEvent, useEffect} from "react";
 import {
     Background,
-    Controls, EdgeChange,
+    Controls, EdgeChange, MiniMap,
     NodeChange,
     NodePositionChange,
     ReactFlow,
     useEdgesState,
-    useNodesState
+    useNodesState, useReactFlow
 } from "reactflow";
 import 'reactflow/dist/style.css';
 import {BTRootNode, BTSelectorNode, BTSequenceNode, BTTaskNode} from "./BtAssetEditorNodeDisplay";
 import {
     BtAssetEditorMenuView,
     EditorContextMenuEnum,
-    IBtAssetEditorMenuHelper,
+    IBtAssetEditorMenuHelper, IMenuPositions,
     MenuDirection
 } from "./BtAssetEditorMenuView";
 import {BtDisplayEdge, BtDisplayNode, BtDisplayNodeData, IAssetSummaryForTab} from "../../common/BtDisplayDS";
@@ -51,7 +51,10 @@ export function BehaviourTreeGraphEditorView(props: IAssetSummaryForTab & { solu
     const [assetVersion, SetAssetVersion] = React.useState<string>("");
     const [contextMenuType, setContextMenuType] = React.useState<EditorContextMenuEnum>(EditorContextMenuEnum.None);
     const [menuDir, setMenuDir] = React.useState<MenuDirection>(MenuDirection.RightDown);
-    const [menuPosition, setMenuPosition] = React.useState<{x: number, y:number}>( { x: 0, y: 0 } );
+    const [menuPosition, setMenuPosition] =
+        React.useState<IMenuPositions>( { viewPosition: {x:0, y:0}, screenPosition: {x:0, y:0} } );
+    const reactFlowInstance = useReactFlow();
+
 
     // Display Node And Edge Methods
     const transformLogicNodesArrayToDisplay = (nodes: Array<ILogicBtNode> | undefined) : Array<BtDisplayNode> => {
@@ -152,7 +155,7 @@ export function BehaviourTreeGraphEditorView(props: IAssetSummaryForTab & { solu
 
     const inspectorHelper: IBtNodeInspectorHelper = {
         OnUpdatedBehaviourTreeNodeSettings(modifiedInfo: BehaviourTreeNodeModificationInfo) {
-            if(modifiedInfo.prevVersion == assetVersion){
+            if(modifiedInfo.prevVersion === assetVersion){
                 setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, modifiedInfo.diffNodesInfos))
                 SetAssetVersion(modifiedInfo.newVersion);
             }
@@ -162,14 +165,14 @@ export function BehaviourTreeGraphEditorView(props: IAssetSummaryForTab & { solu
     //End Inspector Helper
 
     //Menu Helper
-    const RequestCreateBehaviourTreeNode = (nType: BtNodeType, position: { x: number, y: number }, initialSettings: IBtSettings) => {
+    const RequestCreateBehaviourTreeNode = (nType: BtNodeType, screenPosition: { x: number, y: number }, initialSettings: IBtSettings) => {
         fetch(CreateBehaviourTreeNodeAPI, {
             method: 'POST',
             body: JSON.stringify(
                 {
                     assetId: props.assetId,
                     currentVersion: assetVersion,
-                    position: position,
+                    position: reactFlowInstance.screenToFlowPosition(screenPosition),
                     nodeType: nType,
                     initialSettings: initialSettings
                 }
@@ -289,7 +292,6 @@ export function BehaviourTreeGraphEditorView(props: IAssetSummaryForTab & { solu
                 if(res.errCode === 0) {
                     if(assetVersion !== res.modificationInfo.newVersion)
                     {
-                        console.log(res.modificationInfo.diffNodesInfos)
                         setDisplayNodes((prevState) => passModifiedNodeInfos(prevState, res.modificationInfo.diffNodesInfos))
                         SetAssetVersion(res.modificationInfo.newVersion);
                     }
@@ -382,7 +384,7 @@ export function BehaviourTreeGraphEditorView(props: IAssetSummaryForTab & { solu
             setContextMenuType(menuType);
             if(menuType !== EditorContextMenuEnum.None) {
                 setMenuDir(MenuDirection.RightDown);
-                setMenuPosition({ x: event.clientX - viewRectangle.x, y: event.clientY - viewRectangle.y })
+                setMenuPosition({ viewPosition:{ x: event.clientX - viewRectangle.x, y: event.clientY - viewRectangle.y}, screenPosition: { x: event.clientX, y: event.clientY}})
             }
         }
     }
@@ -411,10 +413,10 @@ export function BehaviourTreeGraphEditorView(props: IAssetSummaryForTab & { solu
                     nodeTypes={nodeTypes}
                 >
                     <Controls/>
-                    {/*<MiniMap/>*/}
+                    <MiniMap/>
                     <Background gap={12} size={1}/>
                     <BtAssetEditorMenuView contextMenu={contextMenuType}
-                                           dirMenu={menuDir} position={menuPosition}
+                                           dirMenu={menuDir} menuPositions={menuPosition}
                                            editorHelper={menuHelper}
                                            solutionInfo={props.solutionInfo}
                     />

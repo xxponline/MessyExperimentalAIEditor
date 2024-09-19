@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import {IAssetSummaryForTab} from "../common/BtDisplayDS";
 import {BehaviourTreeGraphEditorView} from "./BehaviourTree/BtAssetEditorView";
 import {SolutionDetailItem} from "../common/ResponseDS";
+import {ReactFlowProvider} from "reactflow";
 
 export default function DocumentTabs(props: { openingDocuments: IAssetSummaryForTab[] , solutionInfo: SolutionDetailItem }) {
     const [value, setValue] = React.useState(0);
@@ -37,7 +38,9 @@ function DocumentTabPanel(props: IAssetSummaryForTab & { solutionInfo: SolutionD
                 hidden={selectedIndexValue !== index}
             >
                 {selectedIndexValue === index &&
-                    <BehaviourTreeGraphEditorView {...props} />
+                    <ReactFlowProvider>
+                        <BehaviourTreeGraphEditorView {...props} />
+                    </ReactFlowProvider>
                 }
             </div>
         );
