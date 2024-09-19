@@ -114,6 +114,7 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
                         {
                             <div style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
                                 <TextField
+                                    fullWidth={selectedAssetSetId === createAssetSetTogKey}
                                     type={selectedAssetSetId === createAssetSetTogKey ? "text" : "hidden"}
                                     inputRef={newAssetSetNameRef}
                                     style={{margin: "10px 5px"}}
