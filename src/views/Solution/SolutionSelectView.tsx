@@ -1,15 +1,18 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import {
+    CreateSolutionResponse,
     GetSolutionDetailResponse,
     ListSolutionResponse,
     SolutionDetailItem,
     SolutionItem
 } from "../../common/ResponseDS";
-import {GetSolutionDetailAPI, ListSolutionsAPI} from "../../common/ServerAPI";
+import {CreateSolutionAPI, GetSolutionDetailAPI, ListSolutionsAPI} from "../../common/ServerAPI";
 import {GeneralEnumEditorTerm} from "../CommonComponent/EnumEditableTerm";
 import ExploreIcon from '@mui/icons-material/Explore';
-import {Button} from "@mui/material";
+import {Button, IconButton, TextField} from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 enum SolutionSelectMode {
     Loading,
@@ -32,28 +35,19 @@ class SolutionSelector extends GeneralEnumEditorTerm<SolutionItem> {
     }
 }
 
-export class SolutionSelectView extends React.Component<{ OnSelectSolution: (solution: SolutionDetailItem) => void }, { mode: SolutionSelectMode, existSolutions : SolutionItem[]}>{
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            mode: SolutionSelectMode.Loading,
-            existSolutions: []
-        }
-    }
+export function SolutionSelectView(props: { OnSelectSolution: (solution: SolutionDetailItem) => void }) {
+    const [viewMode, setViewMode] = React.useState(SolutionSelectMode.Loading);
+    const [existSolutions, setExistSolutions] = React.useState<SolutionItem[]>([]);
+    const [selectedSolution, setSelectedSolution] = React.useState<SolutionItem | null>(null);
 
-    private SelectedSolution : SolutionItem | null = null;
-
-    componentDidMount() {
-        this.RequestListAllSolutions()
-    }
-
-    private RequestListAllSolutions(): void {
+    useEffect(() => {
         fetch(ListSolutionsAPI, {method: "GET"}).
         then(res => res.json()).
         then((data : ListSolutionResponse)  => {
             if(data.solutions.length > 0) {
-                this.setState({ existSolutions: data.solutions, mode: SolutionSelectMode.Select });
-                this.SelectedSolution = data.solutions[0];
+                setExistSolutions(data.solutions);
+                setSelectedSolution(data.solutions[0]);
+                setViewMode(SolutionSelectMode.Select);
             }
             else {
 
@@ -61,17 +55,20 @@ export class SolutionSelectView extends React.Component<{ OnSelectSolution: (sol
         }).catch(
             //TODO
         );
-    }
+    }, []);
 
-    private RequestSolutionDetail(id: string): void {
+    const OpenSolution = () => {
+        if (selectedSolution === null) {
+            return;
+        }
         fetch(GetSolutionDetailAPI, {
             method: "POST",
-            body: JSON.stringify({ solutionId: id})
+            body: JSON.stringify({ solutionId: selectedSolution.solutionId})
         }).
         then(res => res.json()).
         then((data : GetSolutionDetailResponse)  => {
             if(data.errCode === 0) {
-                this.props.OnSelectSolution(data.solutionDetail);
+                props.OnSelectSolution(data.solutionDetail);
             }
             else {
 
@@ -81,49 +78,87 @@ export class SolutionSelectView extends React.Component<{ OnSelectSolution: (sol
         );
     }
 
-    private RequestCreateSolution(): void {
-
-    }
-
-    private DoSelectSolution(selectedItem : SolutionItem) {
-        this.SelectedSolution = selectedItem;
-    }
-
-    private OnOpenClick() : void {
-        if(this.SelectedSolution != null)
+    const createSolutionNameRef = useRef<HTMLInputElement>();
+    const CreateSolution = () => {
+        let solutionName = createSolutionNameRef.current?.value;
+        if((solutionName?.length ?? 0) > 0)
         {
-            this.RequestSolutionDetail(this.SelectedSolution.solutionId);
+            fetch(CreateSolutionAPI, {
+                method: "POST",
+                body: JSON.stringify({ solutionName: solutionName})
+            }).
+            then(res => res.json()).
+            then((result : CreateSolutionResponse)  => {
+                console.log(result);
+                if(result.errCode === 0) {
+                    setExistSolutions(result.solutions);
+                    setSelectedSolution(result.solutions.find(m => m.solutionId === result.newSolutionId)!);
+                    setViewMode(SolutionSelectMode.Select);
+                }
+            }).catch(
+                //TODO
+            );
         }
     }
 
-    render() {
-        switch (this.state.mode)
-        {
-            case SolutionSelectMode.Loading:
-                return(null);
-            case SolutionSelectMode.Select:
-                return (
-                    <div style={{ marginTop: "64px", display: "flex", alignItems: "center", flexDirection: "column" }}>
-                        <div style={{ fontSize: "64px" }}>
-                            <ExploreIcon fontSize="inherit" color="primary" />
-                        </div>
-                        <div style={{ width: "300px"}}>
-                            <SolutionSelector
-                                label="Select Solution"
-                                currentItem={this.SelectedSolution!}
-                                optionalItems={this.state.existSolutions}
-                                onValueChange={(item) => { this.DoSelectSolution(item) }}
-                            />
-                        </div>
-                        <div style={{marginTop: "16px"}}>
-                            <Button variant="contained" endIcon={<SendIcon />} onClick={() => {this.OnOpenClick()}}>
-                                Open Solution
-                            </Button>
-                        </div>
+    switch (viewMode)
+    {
+        case SolutionSelectMode.Loading:
+            return(null);
+        case SolutionSelectMode.Select:
+            return (
+                <div style={{ marginTop: "64px", display: "flex", alignItems: "center", flexDirection: "column" }}>
+                    <div style={{ fontSize: "64px" }}>
+                        <ExploreIcon fontSize="inherit" color="primary" />
                     </div>
-                );
-            case SolutionSelectMode.Create:
-                return (null);
-        }
+                    <div style={{ width: "300px"}}>
+                        <SolutionSelector
+                            label="Select Solution"
+                            currentItem={selectedSolution!}
+                            optionalItems={existSolutions}
+                            onValueChange={(item) => { setSelectedSolution(item) }}
+                        />
+                    </div>
+                    <div style={{marginTop: "16px"}}>
+                        <Button variant="contained" endIcon={<SendIcon />} onClick={OpenSolution}>
+                            Open Solution
+                        </Button>
+                    </div>
+                    <div style={{marginTop: "16px"}}>
+                        <IconButton aria-label="add" onClick={() => {setViewMode(SolutionSelectMode.Create)}}>
+                            <AddCircleOutlineIcon/>
+                        </IconButton>
+                    </div>
+                </div>
+            );
+        case SolutionSelectMode.Create:
+            return (
+                <div style={{marginTop: "64px", display: "flex", alignItems: "center", flexDirection: "column"}}>
+                    <div style={{fontSize: "64px"}}>
+                        <ExploreIcon fontSize="inherit" color="primary"/>
+                    </div>
+                    <div style={{width: "300px"}}>
+                        <TextField
+                            fullWidth
+                            inputRef={createSolutionNameRef}
+                            style={{margin: "10px 5px"}}
+                            label="New Solution Name"
+                            id="standard-size-small"
+                            size="small"
+                            variant="standard"
+                        />
+                    </div>
+                    <div style={{marginTop: "16px"}}>
+                        <Button variant="contained" endIcon={<AddCircleOutlineIcon/>} onClick={CreateSolution}>
+                            Create Solution
+                        </Button>
+                    </div>
+                    <div style={{marginTop: "16px"}}>
+                        <IconButton aria-label="back" disabled={existSolutions.length === 0} onClick={() => {setViewMode(SolutionSelectMode.Select)}}>
+                            <ArrowBackIcon/>
+                        </IconButton>
+                    </div>
+                </div>
+            )
     }
 }
