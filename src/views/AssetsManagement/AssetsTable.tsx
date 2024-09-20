@@ -13,15 +13,22 @@ import EditIcon from "@mui/icons-material/Edit";
 import FileOpenIcon from '@mui/icons-material/FileOpen';
 import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import {GridRowModesModel} from "@mui/x-data-grid/models/api/gridEditingApi";
-import {AssetSummaryItem} from "../../common/ResponseDS";
+import {
+    AssetSummaryItem,
+    CreateAssetResponse,
+    CreateBehaviourTreeNodeResponse,
+    ListAssetsResponse
+} from "../../common/ResponseDS";
 import {IAssetSummaryForTab} from "../../common/BtDisplayDS";
 import {Button, IconButton, TextField} from "@mui/material";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import {CreateAssetAPI, ListAssetsAPI} from "../../common/ServerAPI";
 
 
-export function AssetsTable(props: { AssetList: ({ id: string } & AssetSummaryItem)[], OnOpenDocument: (info: IAssetSummaryForTab) => void }) {
+export function AssetsTable(props: { assetSetId: string, OnOpenDocument: (info: IAssetSummaryForTab) => void }) {
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
     const [isCreateMode, setIsCreateMode] = React.useState(false);
+    const [assetSummaryInfos, setAssetSummaryInfos] = React.useState<(AssetSummaryItem & { id: string})[]>([])
 
     const OnEdit = (id: GridRowId) => {
         setRowModesModel(previousState => {
@@ -80,6 +87,31 @@ export function AssetsTable(props: { AssetList: ({ id: string } & AssetSummaryIt
             });
         }
     }, [isCreateMode]);
+
+    useEffect(() => {
+        setIsCreateMode(false);
+        if(props.assetSetId === "") {
+            setAssetSummaryInfos([]);
+        }
+        else{
+            fetch(ListAssetsAPI,
+                {
+                    method: "POST",
+                    body: JSON.stringify({ assetSetId: props.assetSetId })
+                }
+            ).then(
+                (res) => res.json()
+            ).then(
+                (result: ListAssetsResponse) => {
+                    if(result.errCode === 0) {
+                        setAssetSummaryInfos(result.assetSummaryInfos?.map((item) => {
+                            return { id: item.assetId, ...item }
+                        }) ?? [])
+                    }
+                }
+            )
+        }
+    }, [props.assetSetId]);
 
     const columns: GridColDef<(({ id: string } & AssetSummaryItem)[])[number]>[] = [
         {
@@ -144,7 +176,7 @@ export function AssetsTable(props: { AssetList: ({ id: string } & AssetSummaryIt
                         label="Open"
                         className="textPrimary"
                         onClick={() => {
-                            let selectedItem = props.AssetList.find(s => s.assetId === id)!;
+                            let selectedItem = assetSummaryInfos.find(s => s.assetId === id)!;
                             if (selectedItem) {
                                 props.OnOpenDocument({ assetId: selectedItem.id, assetName: selectedItem.assetName, assetType: selectedItem.assetType })
                             }
@@ -175,7 +207,31 @@ export function AssetsTable(props: { AssetList: ({ id: string } & AssetSummaryIt
         },
 
         OnCreateAsset(assetName: string, assetType: string) {
-            console.log(`assetName : ${assetName}, assetType : ${assetType}`);
+            if(props.assetSetId.length > 0)
+            {
+                fetch(CreateAssetAPI,
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            assetSetId: props.assetSetId,
+                            assetType: assetType,
+                            assetName: assetName
+                        })
+                    }
+                ).then(
+                    (res) => res.json()
+                ).then(
+                    (result: CreateAssetResponse) => {
+                        if(result.errCode === 0) {
+                            setAssetSummaryInfos(result.assetSummaryInfos?.map((item) => {
+                                return { id: item.assetId, ...item }
+                            }) ?? [])
+                        }
+                    }
+                ).finally(
+                    ()=> {setIsCreateMode(false)}
+                )
+            }
         },
 
         IsCreatingAsset: isCreateMode
@@ -185,7 +241,7 @@ export function AssetsTable(props: { AssetList: ({ id: string } & AssetSummaryIt
         <DataGrid
             slotProps={ {toolbar: ToolbarProps}}
             slots={ {toolbar: GridCustomToolbar} }
-            rows={props.AssetList}
+            rows={assetSummaryInfos}
             columns={columns}
             editMode="row"
             rowModesModel={rowModesModel}
@@ -222,8 +278,20 @@ function GridCustomToolbar(props: ToolbarPropsOverrides) {
         }
     }, [props.IsCreatingAsset]);
 
+    const handleCreateClick = () => {
+        if(!props.IsCreatingAsset){
+            props.BeginCreateAsset();
+        }
+        else{
+            let newAssetName = assetNameInputRef.current?.value;
+            if(newAssetName?.length ?? 0 > 0) {
+                props.OnCreateAsset(newAssetName!, "BehaviourTree");
+            }
+        }
+    }
+
     return (
-        <GridToolbarContainer style={{ display:"flex", flexDirection:"row", alignItems:"center" }}>
+        <GridToolbarContainer style={{ display:"flex", flexDirection:"row", alignItems:"center", height:"50px" }}>
             {
                 props.IsCreatingAsset ?
                     <TextField
@@ -235,7 +303,7 @@ function GridCustomToolbar(props: ToolbarPropsOverrides) {
                         variant="standard"
                     /> : (null)
             }
-            <IconButton onClick={() => props.BeginCreateAsset()}>
+            <IconButton onClick={handleCreateClick}>
                 <AddCircleOutlineIcon/>
             </IconButton>
         </GridToolbarContainer>

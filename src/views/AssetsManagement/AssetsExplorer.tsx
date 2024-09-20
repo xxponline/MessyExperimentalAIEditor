@@ -16,7 +16,6 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
 {
     const [assetSets, setAssetSets] = React.useState<AssetSetItem[]>([]);
     const [selectedAssetSetId, setSelectedAssetSetId] = React.useState<string>("");
-    const [assetSummaryInfos, setAssetSummaryInfos] = React.useState<(AssetSummaryItem & { id: string})[]>([])
 
     const createAssetSetTogKey = "CreateNewAssetSet";
 
@@ -42,26 +41,7 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
 
     useEffect(() => {
         if(selectedAssetSetId === createAssetSetTogKey){
-            setAssetSummaryInfos([]);
             newAssetSetNameRef.current?.focus();
-        }
-        else if (selectedAssetSetId.length > 0) {
-            fetch(ListAssetsAPI,
-                {
-                    method: "POST",
-                    body: JSON.stringify({ assetSetId: selectedAssetSetId })
-                }
-            ).then(
-                (res) => res.json()
-            ).then(
-                (result: ListAssetsResponse) => {
-                    if(result.errCode === 0) {
-                        setAssetSummaryInfos(result.assetSummaryInfos?.map((item) => {
-                            return { id: item.assetId, ...item }
-                        }) ?? [])
-                    }
-                }
-            )
         }
     }, [selectedAssetSetId]);
 
@@ -134,7 +114,7 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
             </div>
             <div style={{background: "#ccc", width: "1px"}}/>
             <div style={{width: "80%"}}>
-                <AssetsTable AssetList={assetSummaryInfos} OnOpenDocument={props.OnOpenDocument}/>
+                <AssetsTable assetSetId={selectedAssetSetId} OnOpenDocument={props.OnOpenDocument}/>
             </div>
         </div>
     );

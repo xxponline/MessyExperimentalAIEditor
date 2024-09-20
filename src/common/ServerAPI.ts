@@ -9,6 +9,7 @@ export const CreateAssetSetAPI: string = `${ServerUrl}/AssetManagement/CreateAss
 
 export const ListAssetsAPI: string =  `${ServerUrl}/AssetManagement/ListAssets`;
 export const ReadAssetAPI: string = `${ServerUrl}/AssetManagement/ReadAsset`;
+export const CreateAssetAPI: string = `${ServerUrl}/AssetManagement/CreateAsset`;
 
 export const CreateBehaviourTreeNodeAPI: string = `${ServerUrl}/AssetContentModifier/CreateBehaviourTreeNode`;
 export const RemoveBehaviourTreeNodeAPI: string = `${ServerUrl}/AssetContentModifier/RemoveBehaviourTreeNode`;

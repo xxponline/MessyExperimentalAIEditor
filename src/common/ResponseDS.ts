@@ -62,7 +62,9 @@ export type CreateSolutionResponse = ServerCommonResponse & { newSolutionId: str
 
 export type ListAssetSetsResponse = ServerCommonResponse & { assetSets: AssetSetItem[] }
 export type CreateAssetSetResponse = ServerCommonResponse & { newAssetSetId: string, assetSets: AssetSetItem[] }
+
 export type ListAssetsResponse = ServerCommonResponse & { assetSummaryInfos: AssetSummaryItem[] }
+export type CreateAssetResponse = ServerCommonResponse & { newAssetId: string, assetSummaryInfos: AssetSummaryItem[] }
 
 export type ReadBehaviourTreeAssetResponse = ServerCommonResponse & { assetDocument: AssetDocument }
 export type CreateBehaviourTreeNodeResponse = ServerCommonResponse & { modificationInfo: BehaviourTreeNodeModificationInfo }
