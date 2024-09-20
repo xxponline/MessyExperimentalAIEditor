@@ -1,5 +1,12 @@
-import React from "react";
-import {DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridRowModes} from "@mui/x-data-grid";
+import React, {useEffect, useRef, useState} from "react";
+import {
+    DataGrid,
+    GridActionsCellItem,
+    GridColDef,
+    GridRowId,
+    GridRowModes,
+    GridToolbarContainer, ToolbarPropsOverrides
+} from "@mui/x-data-grid";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -8,50 +15,73 @@ import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import {GridRowModesModel} from "@mui/x-data-grid/models/api/gridEditingApi";
 import {AssetSummaryItem} from "../../common/ResponseDS";
 import {IAssetSummaryForTab} from "../../common/BtDisplayDS";
+import {Button, IconButton, TextField} from "@mui/material";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
-export class AssetsTable extends React.Component<
-    { AssetList: ({ id: string } & AssetSummaryItem)[], OnOpenDocument: (info: IAssetSummaryForTab) => void },
-    { rowModesModel: GridRowModesModel }>
-{
-    constructor(props:any) {
-        super(props);
-        this.state = { rowModesModel: {} }
+
+export function AssetsTable(props: { AssetList: ({ id: string } & AssetSummaryItem)[], OnOpenDocument: (info: IAssetSummaryForTab) => void }) {
+    const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+    const [isCreateMode, setIsCreateMode] = React.useState(false);
+
+    const OnEdit = (id: GridRowId) => {
+        setRowModesModel(previousState => {
+            let resultModel : GridRowModesModel = {}
+            for(let [k,m] of Object.entries(previousState))
+            {
+                if(k !== id && m.mode === GridRowModes.Edit) {
+                    resultModel[k] = { mode: GridRowModes.View, ignoreModifications: true }
+                }
+            }
+            resultModel[id] = { mode: GridRowModes.Edit }
+            return resultModel
+        });
+        setIsCreateMode(false);
     }
 
-    private OnEdit(id: GridRowId)
-    {
-        this.setState(previousState => ({
-            rowModesModel : {
-                ... previousState.rowModesModel,
-                [id]: { mode: GridRowModes.Edit, ignoreModifications: false },
+    const OnSave = (id: GridRowId) => {
+        setRowModesModel(previousState => {
+            let resultModel : GridRowModesModel = {}
+            for(let [k,m] of Object.entries(previousState))
+            {
+                if(k === id) {
+                    resultModel[k] = { mode: GridRowModes.Edit }
+                }
+                else {
+                    resultModel[k] = { mode: GridRowModes.View, ignoreModifications: false }
+                }
             }
+            return resultModel
+        });
+    }
+
+    const OnDelete = (id: GridRowId) => {
+
+    }
+
+    const OnCancelEdit = (id: GridRowId) => {
+        setRowModesModel(previousState => ({
+            ...previousState,
+            [id]: { mode: GridRowModes.View, ignoreModifications: true }
         }));
     }
 
-    private OnSave(id: GridRowId){
-        this.setState(previousState => ({
-            rowModesModel : {
-                ... previousState.rowModesModel,
-                [id]: { mode: GridRowModes.View, ignoreModifications: false },
-            }
-        }));
-    }
+    useEffect(() => {
+        if(isCreateMode)
+        {
+            setRowModesModel(previousState => {
+                let resultModel : GridRowModesModel = {}
+                for(let [k,m] of Object.entries(previousState))
+                {
+                    if(m.mode === GridRowModes.Edit) {
+                        resultModel[k] = { mode: GridRowModes.View, ignoreModifications: true }
+                    }
+                }
+                return resultModel
+            });
+        }
+    }, [isCreateMode]);
 
-    private OnDelete(id: GridRowId){
-
-    }
-
-    private OnCancelEdit(id: GridRowId){
-        this.setState(previousState => ({
-            rowModesModel : {
-                ... previousState.rowModesModel,
-                [id]: { mode: GridRowModes.View, ignoreModifications: true },
-            }
-        }));
-    }
-
-
-    private columns: GridColDef<(({ id: string } & AssetSummaryItem)[])[number]>[] = [
+    const columns: GridColDef<(({ id: string } & AssetSummaryItem)[])[number]>[] = [
         {
             field: 'id',
             headerName: 'AssetId',
@@ -87,7 +117,7 @@ export class AssetsTable extends React.Component<
             width: 150,
             cellClassName: 'actions',
             getActions: ({ id }) => {
-                const isInEditMode = this.state.rowModesModel[id]?.mode === GridRowModes.Edit;
+                const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
                 if (isInEditMode) {
                     return [
                         <GridActionsCellItem
@@ -96,13 +126,13 @@ export class AssetsTable extends React.Component<
                             sx={{
                                 color: 'primary.main',
                             }}
-                            onClick={() => { this.OnSave(id) }}
+                            onClick={() => { OnSave(id) }}
                         />,
                         <GridActionsCellItem
                             icon={<CancelIcon />}
                             label="Cancel"
                             className="textPrimary"
-                            onClick={() => { this.OnCancelEdit(id) }}
+                            onClick={() => { OnCancelEdit(id) }}
                             color="inherit"
                         />,
                     ];
@@ -114,9 +144,9 @@ export class AssetsTable extends React.Component<
                         label="Open"
                         className="textPrimary"
                         onClick={() => {
-                            let selectedItem = this.props.AssetList.find(s => s.assetId === id)!;
+                            let selectedItem = props.AssetList.find(s => s.assetId === id)!;
                             if (selectedItem) {
-                                this.props.OnOpenDocument({ assetId: selectedItem.id, assetName: selectedItem.assetName, assetType: selectedItem.assetType })
+                                props.OnOpenDocument({ assetId: selectedItem.id, assetName: selectedItem.assetName, assetType: selectedItem.assetType })
                             }
                         }}
                         color="inherit"
@@ -125,38 +155,89 @@ export class AssetsTable extends React.Component<
                         icon={<EditIcon />}
                         label="Edit"
                         className="textPrimary"
-                        onClick={() => { this.OnEdit(id) }}
+                        onClick={() => { OnEdit(id) }}
                         color="inherit"
                     />,
-                    <GridActionsCellItem
-                        icon={<DeleteIcon />}
-                        label="Delete"
-                        onClick={() => {}}
-                        color="inherit"
-                    />,
+                    // <GridActionsCellItem
+                    //     icon={<DeleteIcon />}
+                    //     label="Delete"
+                    //     onClick={() => {}}
+                    //     color="inherit"
+                    // />,
                 ];
             },
         }
     ];
 
-    render() {
-        return (
-            <DataGrid
-                rows={this.props.AssetList}
-                columns={this.columns}
-                editMode="row"
-                rowModesModel={this.state.rowModesModel}
-                initialState={{
-                    pagination: {
-                        paginationModel: {
-                            pageSize: 5,
-                        },
-                    },
-                }}
-                pageSizeOptions={[5]}
-                //checkboxSelection
-                //disableRowSelectionOnClick
-            />
-        );
+    const ToolbarProps: ToolbarPropsOverrides = {
+        BeginCreateAsset() {
+            setIsCreateMode(true)
+        },
+
+        OnCreateAsset(assetName: string, assetType: string) {
+            console.log(`assetName : ${assetName}, assetType : ${assetType}`);
+        },
+
+        IsCreatingAsset: isCreateMode
     }
+
+    return (
+        <DataGrid
+            slotProps={ {toolbar: ToolbarProps}}
+            slots={ {toolbar: GridCustomToolbar} }
+            rows={props.AssetList}
+            columns={columns}
+            editMode="row"
+            rowModesModel={rowModesModel}
+            initialState={{
+                pagination: {
+                    paginationModel: {
+                        pageSize: 5,
+                    },
+                },
+            }}
+            pageSizeOptions={[5]}
+            //checkboxSelection
+            //disableRowSelectionOnClick
+        />
+    );
+}
+
+declare module '@mui/x-data-grid' {
+    interface ToolbarPropsOverrides {
+        BeginCreateAsset(): void
+        OnCreateAsset(assetName: string, assetType: string): void
+
+        IsCreatingAsset: boolean
+    }
+}
+
+function GridCustomToolbar(props: ToolbarPropsOverrides) {
+    const assetNameInputRef = useRef<HTMLInputElement>();
+
+    useEffect(() => {
+        if(props.IsCreatingAsset)
+        {
+            assetNameInputRef.current?.focus();
+        }
+    }, [props.IsCreatingAsset]);
+
+    return (
+        <GridToolbarContainer style={{ display:"flex", flexDirection:"row", alignItems:"center" }}>
+            {
+                props.IsCreatingAsset ?
+                    <TextField
+                        inputRef={assetNameInputRef}
+                        style={{margin: "10px 5px"}}
+                        label="New Solution Name"
+                        id="standard-size-small"
+                        size="small"
+                        variant="standard"
+                    /> : (null)
+            }
+            <IconButton onClick={() => props.BeginCreateAsset()}>
+                <AddCircleOutlineIcon/>
+            </IconButton>
+        </GridToolbarContainer>
+    );
 }
