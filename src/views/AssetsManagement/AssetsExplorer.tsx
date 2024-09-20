@@ -29,10 +29,10 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
             (res) => res.json()
         ).then(
             (resultData : ListAssetSetsResponse) =>{
-                if(resultData.errCode == 0){
-                    setAssetSets(resultData.assetSets);
-                    if(resultData.assetSets.length > 0) {
-                        setSelectedAssetSetId(resultData.assetSets[0].assetSetId);
+                if(resultData.errCode === 0){
+                    setAssetSets(resultData.assetSets?? []);
+                    if(resultData.assetSets?.length?? 0 > 0) {
+                        setSelectedAssetSetId(resultData.assetSets![0].assetSetId);
                     }
                 }
             }

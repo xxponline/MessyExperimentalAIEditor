@@ -60,7 +60,7 @@ export type ListSolutionResponse = ServerCommonResponse & { solutions: SolutionI
 export type GetSolutionDetailResponse = ServerCommonResponse & { solutionDetail: SolutionDetailItem }
 export type CreateSolutionResponse = ServerCommonResponse & { newSolutionId: string, solutions: SolutionItem[] }
 
-export type ListAssetSetsResponse = ServerCommonResponse & { assetSets: AssetSetItem[] }
+export type ListAssetSetsResponse = ServerCommonResponse & { assetSets: AssetSetItem[] | null }
 export type CreateAssetSetResponse = ServerCommonResponse & { newAssetSetId: string, assetSets: AssetSetItem[] }
 
 export type ListAssetsResponse = ServerCommonResponse & { assetSummaryInfos: AssetSummaryItem[] }
