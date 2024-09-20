@@ -44,13 +44,14 @@ export function SolutionSelectView(props: { OnSelectSolution: (solution: Solutio
         fetch(ListSolutionsAPI, {method: "GET"}).
         then(res => res.json()).
         then((data : ListSolutionResponse)  => {
-            if(data.solutions.length > 0) {
+            console.log(data);
+            if(data.solutions && data.solutions.length > 0) {
                 setExistSolutions(data.solutions);
                 setSelectedSolution(data.solutions[0]);
                 setViewMode(SolutionSelectMode.Select);
             }
             else {
-
+                setViewMode(SolutionSelectMode.Create);
             }
         }).catch(
             //TODO
