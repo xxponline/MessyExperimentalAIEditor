@@ -1,11 +1,26 @@
 import React from "react";
 import ReactDragListView from "react-drag-listview"
 import CollapsibleSection from "../CommonComponent/CollapsibleSection";
-import {IBtdInspectorViewProps} from "../../viewmodels/BehaviourTree/BtdInspectorViewModel";
 import SettingsEditableTerm from "../CommonComponent/SettingsEditableTerm";
 import {Button, IconButton, Menu, MenuItem} from "@mui/material";
 import {Delete} from "@mui/icons-material";
 import {IBtdDisplayNode} from "../../common/BtDisplayDS";
+import {BtdNodeMeta} from "../../common/BtCommon";
+
+export interface IBtdInspectorViewProps {
+    InspectNodeId: string | null;
+    BtdMetas: BtdNodeMeta[];
+    AttachedBTDs: IBtdDisplayNode[];
+
+    Helper: IBtdInspectorHelper
+}
+
+export interface IBtdInspectorHelper {
+    UpdateBtdSettings(btdId: string, settingItermKey: string, settingValue: any): void;
+    OnMoveItem(fromIdx: number, toIdx: number): void;
+    CreateBtdNode(btdType: string): void;
+    RemoveBtdNode(btdNodeId: string): void;
+}
 
 export default class BtdInspectorView extends React.Component<IBtdInspectorViewProps, { anchorEl: HTMLElement | null }>
 {

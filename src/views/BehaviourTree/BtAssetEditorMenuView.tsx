@@ -62,7 +62,7 @@ export interface IBtAssetEditorEnumProps {
 
 export function BtAssetEditorMenuView(props: IBtAssetEditorEnumProps) {
     let localInfo : MenuLocalInfo = { left: props.menuPositions.viewPosition.x, top: props.menuPositions.viewPosition.y };
-    let availableBttTypes = props.solutionInfo.solutionMeta.BttMetas.map(m => m.BttType);
+    let availableBttTypes = props.solutionInfo.solutionMeta.BttMetas?.map(m => m.BttType) ?? [];
     switch (props.contextMenu) {
         case EditorContextMenuEnum.None:
             return (null);
