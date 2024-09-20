@@ -114,7 +114,7 @@ export function AssetsExplorer(props: { solutionId: string, OnOpenDocument: (inf
             </div>
             <div style={{background: "#ccc", width: "1px"}}/>
             <div style={{width: "80%"}}>
-                <AssetsTable assetSetId={selectedAssetSetId} OnOpenDocument={props.OnOpenDocument}/>
+                <AssetsTable assetSetId={selectedAssetSetId === createAssetSetTogKey ? "" : selectedAssetSetId} OnOpenDocument={props.OnOpenDocument}/>
             </div>
         </div>
     );

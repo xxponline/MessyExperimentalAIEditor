@@ -234,6 +234,7 @@ export function AssetsTable(props: { assetSetId: string, OnOpenDocument: (info: 
             }
         },
 
+        CreateAssetAvailable: props.assetSetId.length > 0,
         IsCreatingAsset: isCreateMode
     }
 
@@ -264,6 +265,7 @@ declare module '@mui/x-data-grid' {
         BeginCreateAsset(): void
         OnCreateAsset(assetName: string, assetType: string): void
 
+        CreateAssetAvailable: boolean
         IsCreatingAsset: boolean
     }
 }
@@ -303,7 +305,7 @@ function GridCustomToolbar(props: ToolbarPropsOverrides) {
                         variant="standard"
                     /> : (null)
             }
-            <IconButton onClick={handleCreateClick}>
+            <IconButton onClick={handleCreateClick} disabled={!props.CreateAssetAvailable}>
                 <AddCircleOutlineIcon/>
             </IconButton>
         </GridToolbarContainer>
